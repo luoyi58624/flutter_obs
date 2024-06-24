@@ -9,8 +9,6 @@ class Model with ChangeNotifier {
   }
 }
 
-Model model = Model();
-
 class DemoPage extends StatefulWidget {
   const DemoPage({super.key});
 
@@ -19,6 +17,8 @@ class DemoPage extends StatefulWidget {
 }
 
 class _DemoPageState extends State<DemoPage> {
+  Model model = Model();
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +33,6 @@ class _DemoPageState extends State<DemoPage> {
   @override
   void dispose() {
     super.dispose();
-    model.dispose();
   }
 
   @override
@@ -49,7 +48,59 @@ class _DemoPageState extends State<DemoPage> {
               onPressed: model.addCount,
               child: Text('count: ${model.count}'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => _ChildPage(model: model)),
+                );
+              },
+              child: const Text('子页面'),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChildPage extends StatefulWidget {
+  const _ChildPage({super.key, required this.model});
+
+  final Model model;
+
+  @override
+  State<_ChildPage> createState() => _ChildPageState();
+}
+
+class _ChildPageState extends State<_ChildPage> {
+  final con = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    widget.model.addListener(update);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.model.removeListener(update);
+  }
+
+  void update() {
+    print('child build');
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('子页面'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: widget.model.addCount,
+          child: Text('count: ${widget.model.count}'),
         ),
       ),
     );
