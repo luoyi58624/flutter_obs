@@ -1,7 +1,7 @@
 A simple state manager, it's similar to ValueNotifier, but the core is to borrow
 from [Getx](https://github.com/jonataslaw/getx).
 
-# Install
+### Install
 
 ```
 flutter pub add flutter_obs
