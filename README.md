@@ -26,7 +26,3 @@ class Example extends StatelessWidget {
 
 ### Done
 
-> As shown in the example above, Obs and ObsBuilder are all its concepts, using Obs is just like
-> using normal variables, only the ObsBuilder package is needed to automatically reconstruct the
-> page.
-
