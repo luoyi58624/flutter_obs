@@ -18,6 +18,7 @@ class DemoPage extends StatefulWidget {
 
 class _DemoPageState extends State<DemoPage> {
   Model model = Model();
+  final count = ValueNotifier(0);
 
   @override
   void initState() {
@@ -48,6 +49,15 @@ class _DemoPageState extends State<DemoPage> {
               onPressed: model.addCount,
               child: Text('count: ${model.count}'),
             ),
+            ValueListenableBuilder(
+              valueListenable: count,
+              builder: (context, value, child) {
+                return ElevatedButton(
+                  onPressed: () => count.value++,
+                  child: Text('count: $value'),
+                );
+              },
+            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
@@ -74,6 +84,7 @@ class _ChildPage extends StatefulWidget {
 
 class _ChildPageState extends State<_ChildPage> {
   final con = ScrollController();
+
   @override
   void initState() {
     super.initState();
