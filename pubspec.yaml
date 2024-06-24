@@ -1,0 +1,17 @@
+name: flutter_obs
+description: "a easy flutter state management, the source code is less than 100, but you can use it to implement global and local states"
+version: 0.0.1
+homepage: https://github.com/luoyi58624/flutter_obs
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
