@@ -1,7 +1,7 @@
 part of '../flutter_obs.dart';
 
-/// 响应式变量构建器，监听内部的响应式变量，当变量发生变更时，将重建小部件
 class ObsBuilder extends StatelessWidget {
+  /// 响应式变量构建器，监听内部的响应式变量，当变量发生变更时，将重建小部件
   const ObsBuilder({super.key, required this.builder});
 
   final WidgetBuilder builder;

@@ -1,18 +1,15 @@
 part of '../flutter_obs.dart';
 
-/// 临时保存[ObsBuilder]更新函数，此变量仅为一个中转变量
+/// 临时保存[ObsBuilder]更新函数，此变量是一个中转变量
 VoidCallback? _notifyFun;
 
-/// 保存移除[_notifyFunList]的更新函数，此变量仅为一个中转变量
+/// 保存移除[_notifyFunList]的更新函数，此变量是一个中转变量
 VoidCallback? _removeNotifyFun;
 
-/// 响应式对象，只是继承了[ValueNotifier]，只不过它会收集所有依赖此变量的[ObsBuilder]，
-/// 当更新此变量时将会自动重建所有依赖该变量的小部件，但是，对于List、Map等对象，
-/// 如果你不是通过.value进行对象覆盖，而是通过 add、remove 等 api 操作原有对象，
-/// 那么你必须使用[notify]方法手动进行更新，因为自动更新实际上只是拦截了 setter 方法。
+/// 响应式对象，它会收集所有依赖此变量的[ObsBuilder]，通过.value更新会自动重建[ObsBuilder]，
+/// 否则你需要手动调用[notify]方法通知小部件更新。
 ///
-/// 提示：[Obs]本身并不需要[ValueNotifier]，继承它只是为了扩展性，因为现有很多 api 都依赖
-/// [ChangeNotifier]体系。
+/// 提示：[Obs]本身并不需要[ValueNotifier]，继承它只是方便用户复用[ChangeNotifier]体系api。
 class Obs<T> extends ValueNotifier<T> {
   Obs(
     this._value, {
@@ -73,6 +70,7 @@ class Obs<T> extends ValueNotifier<T> {
     super.dispose();
   }
 
+  /// 重写 toString 方法，让你在字符串中可以省略.value
   @override
   String toString() => value.toString();
 }

@@ -1,3 +1,7 @@
+## 1.0.1
+
+* chore: 精简Obs注释
+
 ## 1.0.0
 
 * feat: 增强扩展性，支持flutter_hooks
