@@ -24,7 +24,7 @@ class _GlobalStatePageState extends State<GlobalStatePage> {
   @override
   void dispose() {
     super.dispose();
-    count.dispose();
+    count.reset();
   }
 
   @override

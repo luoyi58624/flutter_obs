@@ -1,3 +1,7 @@
+## 1.1.0
+
+* feat: Obs不再继承ValueNotifier，只实现Listenable接口
+
 ## 1.0.1
 
 * chore: 精简Obs注释

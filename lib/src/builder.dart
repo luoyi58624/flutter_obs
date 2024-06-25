@@ -21,7 +21,7 @@ class _Element extends StatelessElement {
 
   /// 拦截小部件构建的生命周期，为响应式变量建立关联。
   /// 1. 构建页面前将更新页面函数赋值给中转变量
-  /// 2. 构建页面，它如果读取到内部的响应式变量 getter 方法，那么会将 _notify 函数保存到监听列表中
+  /// 2. 构建页面时，它如果读取到内部的响应式变量 getter 方法，那么会将 _notify 函数保存到监听列表中
   /// 3. Obs变量 getter 方法会同时设置移除监听的中转变量，将此变量保存在组件内部，卸载时将执行
   @override
   Widget build() {

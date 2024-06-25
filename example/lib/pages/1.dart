@@ -40,14 +40,6 @@ class SimplePage extends StatelessWidget {
                             Text('ListenableBuilder count: ${count.value}'),
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () => count.value++,
-                      child: ValueListenableBuilder(
-                          valueListenable: count,
-                          builder: (context, value, child) {
-                            return Text('ValueListenableBuilder count: $value');
-                          }),
-                    ),
                   ],
                 ),
               ),
