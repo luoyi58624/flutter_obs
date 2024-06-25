@@ -4,29 +4,75 @@ part of '../flutter_obs.dart';
 VoidCallback? _notifyFun;
 
 /// 保存移除[_notifyFunList]的更新函数，此变量仅为一个中转变量
-VoidCallback? _disposeNotifyFun;
+VoidCallback? _removeNotifyFun;
 
-/// 响应式对象，它会收集所有依赖此变量的[ObsBuilder]，当更新此变量时将会重建所有依赖该变量的小部件，
-/// 但是，对于List、Map等对象，如果你不是通过.value进行对象覆盖，而是通过 add、remove 等 api 操作原有对象，
+/// 响应式对象，只是继承了[ValueNotifier]，只不过它会收集所有依赖此变量的[ObsBuilder]，
+/// 当更新此变量时将会自动重建所有依赖该变量的小部件，但是，对于List、Map等对象，
+/// 如果你不是通过.value进行对象覆盖，而是通过 add、remove 等 api 操作原有对象，
 /// 那么你必须使用[notify]方法手动进行更新，因为自动更新实际上只是拦截了 setter 方法。
 ///
-/// 注意：使用[ObsBuilder]包裹的小部件被移除时会自动释放，但如果你使用[addListener]添加
-/// 的副作用请务必手动移除，除非你是在创建当前响应式变量的小部件中添加的监听，当小部件被销毁
-/// 响应式变量和其副作用都会被 GC 回收。
+/// 提示：[Obs]本身并不需要[ValueNotifier]，继承它只是为了扩展性，因为现有很多 api 都依赖
+/// [ChangeNotifier]体系。
 class Obs<T> extends ValueNotifier<T> {
-  Obs(super._value);
+  Obs(
+    this._value, {
+    this.manual = false,
+  }) : super(_value) {
+    this._initialValue = _value;
+  }
+
+  /// 是否手动刷新，默认false，若为 true 当变量发生更改时不会自动调用[notify]方法
+  final bool manual;
+
+  T _value;
 
   /// 当小部件被[ObsBuilder]包裹时，它会追踪内部的响应式变量
   @override
   T get value {
     if (_notifyFun != null) {
       final fun = _notifyFun!;
-      addListener(fun);
-      _disposeNotifyFun = () => removeListener(fun);
+      _notifyFunList.add(fun);
+      _removeNotifyFun = () => _notifyFunList.remove(fun);
     }
-    return super.value;
+    return _value;
   }
 
-  /// 通知所有依赖此响应式变量的小部件进行刷新，该方法只是暴露
-  void notify() => notifyListeners();
+  /// 拦截 setter 方法更新变量通知所有小部件更新
+  @override
+  set value(T newValue) {
+    if (_value != newValue) {
+      _value = newValue;
+      if (!manual) notify();
+    }
+  }
+
+  /// 保存初始值，当调用[dispose]方法时会清空[_notifyFunList]，并重置初始值
+  late T _initialValue;
+
+  /// 保存依赖此变量的小部件刷新方法集合
+  final Set<VoidCallback> _notifyFunList = {};
+
+  /// 通知所有依赖此响应式变量的小部件进行刷新
+  void notify() {
+    for (var fun in _notifyFunList) {
+      fun();
+    }
+    notifyListeners();
+  }
+
+  /// 重置响应式变量状态，它会清空当前响应式变量保存的所有[ObsBuilder]依赖，并重置响应式变量的默认值
+  void reset() {
+    _notifyFunList.clear();
+    _value = _initialValue;
+  }
+
+  /// 完全销毁响应式变量，一旦执行此方法，该响应式变量将不可使用，除非你重新赋值
+  @override
+  void dispose() {
+    reset();
+    super.dispose();
+  }
+
+  @override
+  String toString() => value.toString();
 }

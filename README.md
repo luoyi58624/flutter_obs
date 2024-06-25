@@ -1,5 +1,4 @@
-A simple state manager, it's similar to ValueNotifier, but the core is to borrow
-from [Getx](https://github.com/jonataslaw/getx).
+A simple state manager, source code only 100 lines.
 
 ### Install
 

@@ -1,6 +1,8 @@
 part of '../flutter_obs.dart';
 
-/// 适配[flutter_hooks]库，相对于[StatelessWidget]，它可以在小部件重建时保存变量状态
+/// 适配[flutter_hooks]库，相对于[StatelessWidget]，它可以在小部件重建时保存变量状态。
+///
+/// 提示：它与[useState]作用相同，唯一的区别在于它会重建当前整个小部件。
 Obs<T> useObs<T>(T initialData) {
   return use(_ObsHook(initialData: initialData));
 }

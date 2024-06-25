@@ -1,8 +1,6 @@
 import 'package:example/pages/test.dart';
 import 'package:flutter/material.dart';
 import '1.dart';
-import '10.dart';
-import '11.dart';
 import '2.dart';
 import '3.dart';
 import '4.dart';
@@ -11,6 +9,8 @@ import '6.dart';
 import '7.dart';
 import '8.dart';
 import '9.dart';
+import '10.dart';
+import 'change_notify_test.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -104,26 +104,27 @@ class HomePage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const DemoPage()),
-                );
-              },
-              child: const Text('10.DemoPage'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => const HooksPage()),
                 );
               },
-              child: const Text('11.配合Hooks示例'),
+              child: const Text('10.Flutter_Hooks示例'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => TestPage()),
+                  MaterialPageRoute(builder: (context) => const TestPage()),
                 );
               },
               child: const Text('测试页面'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const ChangeNotifyTestPage()),
+                );
+              },
+              child: const Text('ChangeNotify测试页面'),
             ),
           ],
         ),

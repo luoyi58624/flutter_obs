@@ -1,13 +1,7 @@
 part of '../flutter_obs.dart';
 
-/// 响应式变量构建器
+/// 响应式变量构建器，监听内部的响应式变量，当变量发生变更时，将重建小部件
 class ObsBuilder extends StatelessWidget {
-  /// 监听内部的响应式变量，当变量发生变更时，将自动重建小部件，
-  /// 你可以嵌套多个构建器，将包裹的响应式变量以最小细粒度进行重建，
-  /// 当构建器内部包含多个响应式变量时，同时更改多个变量不会触发多次构建，
-  /// 因为 Flutter 是根据帧来刷新小部件的，每次执行 setState 只是将当前组件标记为脏，
-  /// 如果一个组件已经标记过了会直接返回，然后将需要刷新的小部件放入更新队列中，
-  /// 等下一帧到来时统一更新，所以它并不会因为你执行了几次更新操作就触发几次更新。
   const ObsBuilder({super.key, required this.builder});
 
   final WidgetBuilder builder;
@@ -22,21 +16,26 @@ class ObsBuilder extends StatelessWidget {
 class _Element extends StatelessElement {
   _Element(super.widget);
 
-  VoidCallback? disposeNotifyFun;
+  /// 保存销毁[Obs]变量的监听函数，当此组件被销毁时，我们需要从[Obs]中移除它的监听函数
+  VoidCallback? removeNotifyFun;
 
+  /// 拦截小部件构建的生命周期，为响应式变量建立关联。
+  /// 1. 构建页面前将更新页面函数赋值给中转变量
+  /// 2. 构建页面，它如果读取到内部的响应式变量 getter 方法，那么会将 _notify 函数保存到监听列表中
+  /// 3. Obs变量 getter 方法会同时设置移除监听的中转变量，将此变量保存在组件内部，卸载时将执行
   @override
   Widget build() {
     _notifyFun = _notify;
     var result = super.build();
     _notifyFun = null;
-    disposeNotifyFun = _disposeNotifyFun;
-    _disposeNotifyFun = null;
+    removeNotifyFun = _removeNotifyFun;
+    _removeNotifyFun = null;
     return result;
   }
 
   @override
   void unmount() {
-    if (disposeNotifyFun != null) disposeNotifyFun!();
+    if (removeNotifyFun != null) removeNotifyFun!();
     super.unmount();
   }
 

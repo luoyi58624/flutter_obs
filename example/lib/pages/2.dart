@@ -16,6 +16,9 @@ class _GlobalStatePageState extends State<GlobalStatePage> {
   void initState() {
     super.initState();
     count = Obs(0);
+    count.addListener(() {
+      debugPrint('count更新：$count');
+    });
   }
 
   @override

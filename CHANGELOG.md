@@ -1,3 +1,7 @@
+## 1.0.0
+
+* feat: 增强扩展性，支持flutter_hooks
+
 ## 0.0.2
 
 * chore: 更新文档

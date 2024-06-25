@@ -1,58 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_obs/flutter_obs.dart';
 
-class TestPage extends StatelessWidget {
-  TestPage({super.key});
+class TestPage extends StatefulWidget {
+  const TestPage({super.key});
 
+  @override
+  State<TestPage> createState() => _TestPageState();
+}
+
+class _TestPageState extends State<TestPage> {
   final count = Obs(0);
-  final count2 = Obs(0);
-  final count3 = Obs(0);
-  final flag = Obs(false);
 
+  // final count2 = Obs(0);
+  // final count3 = Obs(0);
+  // final flag = Obs(false);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('简单状态管理'),
         actions: [
-          ObsBuilder(builder: (context) {
-            return Switch(
-              value: flag.value,
-              onChanged: (v) => flag.value = v,
-            );
-          }),
+          // ObsBuilder(builder: (context) {
+          //   return Switch(
+          //     value: flag.value,
+          //     onChanged: (v) => flag.value = v,
+          //   );
+          // }),
         ],
       ),
       body: ObsBuilder(
         builder: (context) {
+          debugPrint('column update');
           return Column(
             children: [
               ElevatedButton(
                 onPressed: () {
                   count.value++;
                 },
-                // child: ObsBuilder(
-                //   builder: (context) {
-                //     i('count1更新');
-                //     return Text('count: ${count.value}');
-                //   },
-                // ),
-                child: Text('count: ${count.value}'),
+                child: ObsBuilder(
+                  builder: (context) {
+                    debugPrint('count1更新');
+                    return Text('count: ${count.value}');
+                  },
+                ),
+                // child: Text('count: ${count.value}'),
               ),
-              Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      count2.value++;
-                    },
-                    child: ObsBuilder(
-                      builder: (context) {
-                        return Text('count2: ${count2.value}');
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              // Column(
+              //   children: [
+              //     ElevatedButton(
+              //       onPressed: () {
+              //         count2.value++;
+              //       },
+              //       child: ObsBuilder(
+              //         builder: (context) {
+              //           return Text('count2: ${count2.value}');
+              //         },
+              //       ),
+              //     ),
+              //   ],
+              // ),
               // SizedBox(
               //   height: 200,
               //   child: SingleChildScrollView(
@@ -67,13 +73,13 @@ class TestPage extends StatelessWidget {
               //         children: [...List.generate(10, (index) => const _Child())],
               //       )),
               // ),
-              ElevatedButton(
-                onPressed: () {
-                  count3.value++;
-                },
-                child: Text('count3: ${count3.value}'),
-                // child: ObsBuilder(() => Text('count2: ${count2.value}')),
-              ),
+              // ElevatedButton(
+              //   onPressed: () {
+              //     count3.value++;
+              //   },
+              //   child: Text('count3: ${count3.value}'),
+              //   // child: ObsBuilder(() => Text('count2: ${count2.value}')),
+              // ),
             ],
           );
         },

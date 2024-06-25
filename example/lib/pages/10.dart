@@ -1,117 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_obs/flutter_obs.dart';
 
-class Model with ChangeNotifier {
-  int count = 0;
-
-  void addCount() {
-    count++;
-    notifyListeners();
-  }
-}
-
-class DemoPage extends StatefulWidget {
-  const DemoPage({super.key});
+class HooksPage extends HookWidget {
+  const HooksPage({super.key});
 
   @override
-  State<DemoPage> createState() => _DemoPageState();
-}
-
-class _DemoPageState extends State<DemoPage> {
-  Model model = Model();
-  final count = ValueNotifier(0);
-
-  @override
-  void initState() {
-    super.initState();
-    model.addListener(() {
-      print('build');
-      if (mounted) {
-        setState(() {});
-      }
+  Widget build(BuildContext context) {
+    final count = Obs(0);
+    // 当小部件重建时它会保留状态，原始Api则会重置
+    final count2 = useObs(0);
+    final count3 = useState(0);
+    useValueChanged(count3.value, (oldValue, newValue) {
+      debugPrint('旧值: $oldValue');
+      debugPrint('新值: $newValue');
+      return newValue;
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Demo Page'),
+        title: const Text('flutter hooks示例'),
       ),
       body: Center(
-        child: Column(
-          children: [
-            ElevatedButton(
-              onPressed: model.addCount,
-              child: Text('count: ${model.count}'),
-            ),
-            ValueListenableBuilder(
-              valueListenable: count,
-              builder: (context, value, child) {
-                return ElevatedButton(
-                  onPressed: () => count.value++,
-                  child: Text('count: $value'),
-                );
-              },
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => _ChildPage(model: model)),
-                );
-              },
-              child: const Text('子页面'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ChildPage extends StatefulWidget {
-  const _ChildPage({super.key, required this.model});
-
-  final Model model;
-
-  @override
-  State<_ChildPage> createState() => _ChildPageState();
-}
-
-class _ChildPageState extends State<_ChildPage> {
-  final con = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    widget.model.addListener(update);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    widget.model.removeListener(update);
-  }
-
-  void update() {
-    print('child build');
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('子页面'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: widget.model.addCount,
-          child: Text('count: ${widget.model.count}'),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ElevatedButton(
+                onPressed: () => count.value++,
+                child: ObsBuilder(
+                  builder: (_) => Text('Obs count: ${count.value}'),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => count2.value++,
+                child: ObsBuilder(
+                  builder: (_) => Text('useObs count: ${count2.value}'),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => count3.value++,
+                child: Text('useState count: ${count3.value}'),
+              ),
+            ],
+          ),
         ),
       ),
     );
