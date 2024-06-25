@@ -2,6 +2,7 @@ import 'package:example/pages/test.dart';
 import 'package:flutter/material.dart';
 import '1.dart';
 import '10.dart';
+import '11.dart';
 import '2.dart';
 import '3.dart';
 import '4.dart';
@@ -107,6 +108,14 @@ class HomePage extends StatelessWidget {
                 );
               },
               child: const Text('10.DemoPage'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const HooksPage()),
+                );
+              },
+              child: const Text('11.配合Hooks示例'),
             ),
             ElevatedButton(
               onPressed: () {
