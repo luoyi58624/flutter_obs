@@ -8,6 +8,9 @@ class SimplePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final count = Obs(0);
+    count.addListener(() {
+      print('count更新');
+    });
     return Scaffold(
       appBar: AppBar(
         title: const Text('入门示例'),

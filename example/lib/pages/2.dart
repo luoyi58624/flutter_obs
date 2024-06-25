@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_obs/flutter_obs.dart';
 
 /// 声明全局状态，你可以在任意 dart 文件中保存这个值，也可以将它封装到 class 中
-final count = Obs(0);
+var count = Obs(0);
 
 class GlobalStatePage extends StatefulWidget {
   const GlobalStatePage({super.key});
@@ -13,9 +13,15 @@ class GlobalStatePage extends StatefulWidget {
 
 class _GlobalStatePageState extends State<GlobalStatePage> {
   @override
+  void initState() {
+    super.initState();
+    count = Obs(0);
+  }
+
+  @override
   void dispose() {
     super.dispose();
-    count.reset();
+    count.dispose();
   }
 
   @override

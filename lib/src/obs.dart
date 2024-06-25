@@ -8,21 +8,22 @@ VoidCallback? _disposeNotifyFun;
 
 /// 响应式对象，它会收集所有依赖此变量的[ObsBuilder]，当更新此变量时将会重建所有依赖该变量的小部件，
 /// 但是，对于List、Map等对象，如果你不是通过.value进行对象覆盖，而是通过 add、remove 等 api 操作原有对象，
-/// 那么你必须使用[update]方法手动进行更新，因为自动更新实际上只是拦截了 setter 方法。
-class Obs<T> {
+/// 那么你必须使用[notify]方法手动进行更新，因为自动更新实际上只是拦截了 setter 方法。
+///
+/// 提示：[Obs]本身逻辑是不依赖[ValueNotifier]和[ChangeNotifier]的，选择继承它们只是为了扩展性。
+class Obs<T> extends ValueNotifier<T> {
   Obs(
-    this._value, {
+    super._value, {
     this.manual = false,
   }) {
-    this._initialValue = _value;
+    this._initialValue = super.value;
   }
 
   /// 是否手动刷新，默认false，若为 true 当变量发生更改时不会自动调用[notify]方法
   final bool manual;
 
-  T _value;
-
   /// 当小部件被[ObsBuilder]包裹时，它会追踪内部的响应式变量，而 getter 方法则是与其建立联系
+  @override
   T get value {
     if (_notifyFun != null) {
       final fun = _notifyFun!;
@@ -31,13 +32,14 @@ class Obs<T> {
         _notifyFunList.remove(fun);
       };
     }
-    return _value;
+    return super.value;
   }
 
   /// 拦截 setter 方法更新变量通知所有小部件更新
+  @override
   set value(T newValue) {
-    if (_value != newValue) {
-      _value = newValue;
+    if (super.value != newValue) {
+      super.value = newValue;
       if (!manual) notify();
     }
   }
@@ -55,9 +57,16 @@ class Obs<T> {
     }
   }
 
-  /// 重置响应式变量状态，只有当你使用全局变量时才可能会用到，局部变量不需要你做任何额外操作
+  /// 重置响应式变量状态，它会清空当前响应式变量保存的所有[ObsBuilder]依赖，并重置响应式变量的默认值
   void reset() {
     _notifyFunList.clear();
-    _value = _initialValue;
+    super.value = _initialValue;
+  }
+
+  /// 完全销毁响应式变量，一旦执行此方法，该响应式变量将不可使用，除非你重新赋值
+  @override
+  void dispose() {
+    reset();
+    super.dispose();
   }
 }
