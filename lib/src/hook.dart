@@ -27,5 +27,5 @@ class _ObsHookState<T> extends HookState<Obs<T>, _ObsHook<T>> {
   Object? get debugValue => _state.value;
 
   @override
-  String get debugLabel => 'useState<$T>';
+  String get debugLabel => 'useObs<$T>';
 }

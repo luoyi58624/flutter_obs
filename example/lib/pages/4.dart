@@ -8,41 +8,63 @@ class InputPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final inputValue = Obs('');
-    final inputValue2 = Obs('Obs');
     return Scaffold(
       appBar: AppBar(
         title: const Text('Input双向绑定示例'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            ObsBuilder(builder: (context) {
-              return Text('Obs: ${inputValue.value}');
-            }),
-            InputWidget(modelValue: inputValue),
-            const SizedBox(height: 50),
-            ObsBuilder(builder: (context) {
-              return Text('Obs2: ${inputValue2.value}');
-            }),
-            InputWidget(modelValue: inputValue2),
-          ],
-        ),
+        child: ObsBuilder(builder: (context) {
+          return Column(
+            children: [
+              InputWidget(
+                value: inputValue.value,
+                modelValue: inputValue,
+              ),
+              InputWidget(
+                value: inputValue.value,
+                modelValue: inputValue,
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
 }
 
-class InputWidget extends StatelessWidget {
-  const InputWidget({super.key, required this.modelValue});
+class InputWidget extends StatefulWidget {
+  const InputWidget({super.key, this.value, this.modelValue});
 
-  final Obs<String> modelValue;
+  final String? value;
+  final Obs<String>? modelValue;
+
+  @override
+  State<InputWidget> createState() => _InputWidgetState();
+}
+
+class _InputWidgetState extends State<InputWidget> {
+  late final TextEditingController controller =
+      TextEditingController(text: widget.value);
+
+  @override
+  void didUpdateWidget(covariant InputWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final String newText = widget.value ?? '';
+    if (newText != '') {
+      controller.value = controller.value.copyWith(
+        text: widget.value ?? '',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: modelValue.value,
-      onChanged: (v) => modelValue.value = v,
+      controller: controller,
+      onChanged: (v) {
+        if (widget.modelValue != null) widget.modelValue!.value = v;
+      },
     );
   }
 }

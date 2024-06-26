@@ -67,8 +67,4 @@ class Obs<T> implements Listenable {
   void removeListener(VoidCallback listener) {
     _notifyFunList.remove(listener);
   }
-
-  /// 重写 toString 方法，让你在字符串中可以省略.value
-  @override
-  String toString() => value.toString();
 }

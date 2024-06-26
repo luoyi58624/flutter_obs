@@ -1,3 +1,7 @@
+## 1.1.1
+
+* chore: Obs移除toString，访问响应式变量应当都加上.value，统一写法
+
 ## 1.1.0
 
 * feat: Obs不再继承ValueNotifier，只实现Listenable接口
