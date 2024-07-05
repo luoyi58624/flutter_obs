@@ -1,3 +1,8 @@
+## 1.2.0
+
+* feat: ObsBuilder添加 watch 参数
+* fix: 修复移除监听函数泄漏问题
+
 ## 1.1.1
 
 * chore: Obs移除toString，访问响应式变量应当都加上.value，统一写法
