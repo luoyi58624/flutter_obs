@@ -45,10 +45,7 @@ class _ManualBindPageState extends State<ManualBindPage> {
                 ),
               ),
               ObsBuilder(
-                binding: [
-                  count1,
-                  count2,
-                ],
+                watch: [count1, count2],
                 builder: (_) => Text('count1和count2 build次数: ${buildCount++}'),
               ),
               ElevatedButton(
@@ -142,14 +139,6 @@ class _ChildPage2State extends State<_ChildPage2> {
               child: ObsBuilder(builder: (context) {
                 return Text('count2: ${count2.value}');
               }),
-            ),
-            ElevatedButton(
-              onPressed: () => count2.value++,
-              child: ListenableBuilder(
-                listenable: count2,
-                builder: (context, child) =>
-                    Text('ListenableBuilder count2: ${count2.value}'),
-              ),
             ),
             ElevatedButton(
               onPressed: count2.reset,

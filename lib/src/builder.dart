@@ -2,54 +2,115 @@ part of '../flutter_obs.dart';
 
 class ObsBuilder extends StatefulWidget {
   /// 响应式变量构建器，监听内部的响应式变量，当变量发生变更时，将重建小部件
-  const ObsBuilder({super.key, required this.builder, this.binding});
+  const ObsBuilder({
+    super.key,
+    required this.builder,
+    this.watch = const [],
+  });
 
   /// 必须通过函数构建小部件，否则无法延迟拦截读取内部的响应式变量
   final WidgetBuilder builder;
 
-  /// 手动绑定响应式变量与其建立关联
-  final List<Obs>? binding;
+  /// 监听响应式变量，监听的任意一个变量发生更改都会刷新此小部件
+  final List<Obs> watch;
 
   @override
   State<ObsBuilder> createState() => _ObsBuilderState();
 }
 
 class _ObsBuilderState extends State<ObsBuilder> {
-  /// 保存销毁[Obs]变量的监听函数集合，一个构建器可以存在多个响应式变量，该组件被销毁时，
-  /// 需要通知所有的响应式变量移除此构建器的更新函数
-  final Set<VoidCallback> removeNotifyFunList = {};
+  /// 保存绑定的响应式变量集合
+  final Set<Obs> dependObsList = {};
 
+  /// 是否更新了 watch 依赖
+  bool isUpdateWatch = false;
+
+  /// 开发环境下若更改了binding，需要进行添加或移除绑定的响应式变量
   @override
-  Widget build(BuildContext context) {
-    if (widget.binding != null && widget.binding!.isNotEmpty) {
-      for (final obs in widget.binding!) {
-        if (!obs._notifyFunList.contains(_notify)) {
-          obs.addListener(_notify);
-          removeNotifyFunList.add(() => obs.removeListener(_notify));
+  void didUpdateWidget(covariant ObsBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.watch != oldWidget.watch) {
+      isUpdateWatch = true;
+      if (oldWidget.watch.isEmpty) {
+        _addWatch(widget.watch);
+      } else if (widget.watch.isEmpty) {
+        _removeWatch(oldWidget.watch);
+      } else {
+        final List<Obs> hasObsList = [];
+        final List<Obs> addObsList = [];
+        final List<Obs> removeObsList = [];
+        for (var value in widget.watch) {
+          if (oldWidget.watch.contains(value)) {
+            hasObsList.add(value);
+          } else {
+            addObsList.add(value);
+          }
         }
+        for (var value in oldWidget.watch) {
+          if (!hasObsList.contains(value)) {
+            removeObsList.add(value);
+          }
+        }
+        _addWatch(addObsList);
+        _removeWatch(removeObsList);
       }
     }
-    _notifyFun = _notify;
-    var result = widget.builder(context);
-    _notifyFun = null;
-    removeNotifyFunList.addAll(_removeNotifyFunList);
-    _removeNotifyFunList.clear();
-    return result;
   }
 
   @override
   void dispose() {
-    for (var fun in removeNotifyFunList) {
-      fun();
+    for (var obs in dependObsList) {
+      obs.removeListener(_notify);
     }
-    removeNotifyFunList.clear();
     super.dispose();
   }
 
-  /// 更新函数，响应式变量发生变更就是执行它们让页面刷新
+  void _addWatch(List<Obs> watch) {
+    for (final obs in watch) {
+      if (!obs._notifyFunList.contains(_notify)) {
+        obs.addListener(_notify);
+        dependObsList.add(obs);
+      }
+    }
+  }
+
+  void _removeWatch(List<Obs> watch) {
+    for (final obs in watch) {
+      obs.removeListener(_notify);
+      dependObsList.remove(obs);
+    }
+  }
+
+  /// 响应式变量发生变更就是执行此函数通知页面刷新
   void _notify() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 1.设置刷新页面函数到临时变量
+    _notifyFun = _notify;
+    // 2.构建页面，触发响应式变量的 getter 方法，将 _notify 函数添加到监听器中
+    var result = widget.builder(context);
+    // 3.销毁临时变量
+    _notifyFun = null;
+    // 4.在构建器中保存依赖的响应式变量集合
+    dependObsList.addAll(_dependObsList);
+    // 5.销毁依赖的响应式变量集合
+    _dependObsList.clear();
+    // 6.如果设置了watch，则需要将监听的响应式变量添加到集合中
+    if (widget.watch.isNotEmpty) {
+      // 7.排除更新 watch 依赖，didUpdateWidget生命周期中已处理
+      if (isUpdateWatch) {
+        isUpdateWatch = false;
+      }
+      // 8.添加监听依赖，如果已添加会自动跳过
+      else {
+        _addWatch(widget.watch);
+      }
+    }
+    return result;
   }
 }

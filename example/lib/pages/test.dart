@@ -39,7 +39,7 @@ class _TestPageState extends State<TestPage> {
                 },
                 child: ObsBuilder(
                   builder: (context) {
-                    debugPrint('count1更新');
+                    debugPrint('count更新');
                     return Text('count: ${count.value}');
                   },
                 ),
