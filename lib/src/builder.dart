@@ -2,44 +2,67 @@ part of '../flutter_obs.dart';
 
 class ObsBuilder extends StatelessWidget {
   /// 响应式变量构建器，监听内部的响应式变量，当变量发生变更时，将重建小部件
-  const ObsBuilder({super.key, required this.builder});
+  const ObsBuilder({super.key, required this.builder, this.binding});
 
+  /// 必须通过函数构建小部件，否则无法延迟拦截读取内部的响应式变量
   final WidgetBuilder builder;
 
+  /// 手动绑定响应式变量与其建立关联
+  final List<Obs>? binding;
+
   @override
-  StatelessElement createElement() => _Element(this);
+  StatelessElement createElement() {
+    print('xx');
+    return _Element(this, binding);
+  }
 
   @override
   Widget build(BuildContext context) => builder(context);
 }
 
 class _Element extends StatelessElement {
-  _Element(super.widget);
+  _Element(super.widget, this.binding);
 
-  /// 保存销毁[Obs]变量的监听函数，当此组件被销毁时，我们需要从[Obs]中移除它的监听函数
-  VoidCallback? removeNotifyFun;
+  final List<Obs>? binding;
 
-  /// 拦截小部件构建的生命周期，为响应式变量建立关联。
-  /// 1. 构建页面前将更新页面函数赋值给中转变量
-  /// 2. 构建页面时，它如果读取到内部的响应式变量 getter 方法，那么会将 _notify 函数保存到监听列表中
-  /// 3. Obs变量 getter 方法会同时设置移除监听的中转变量，将此变量保存在组件内部，卸载时将执行
+  /// 保存销毁[Obs]变量的监听函数集合，一个构建器可以存在多个响应式变量，该组件被销毁时，
+  /// 需要通知所有的响应式变量移除此构建器的更新函数
+  final Set<VoidCallback> removeNotifyFunList = {};
+
+  /// 拦截小部件构建的生命周期，为响应式变量建立关联
   @override
   Widget build() {
+    if (binding != null && binding!.isNotEmpty) {
+      print(binding);
+      for (final obs in binding!) {
+        if (!obs._notifyFunList.contains(_notify)) {
+          obs.addListener(_notify);
+          removeNotifyFunList.add(() => obs.removeListener(_notify));
+        }
+      }
+    }
     _notifyFun = _notify;
     var result = super.build();
     _notifyFun = null;
-    removeNotifyFun = _removeNotifyFun;
-    _removeNotifyFun = null;
+    removeNotifyFunList.addAll(_removeNotifyFunList);
+    _removeNotifyFunList.clear();
     return result;
   }
 
+  /// 卸载时移除监听
   @override
   void unmount() {
-    if (removeNotifyFun != null) removeNotifyFun!();
+    for (var fun in removeNotifyFunList) {
+      fun();
+    }
+    removeNotifyFunList.clear();
     super.unmount();
   }
 
+  /// 更新函数，响应式变量发生变更就是执行它们让页面刷新
   void _notify() {
-    if (mounted) markNeedsBuild();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) markNeedsBuild();
+    });
   }
 }

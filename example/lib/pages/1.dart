@@ -7,7 +7,7 @@ class SimplePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final countList = List.generate(500, (index) {
+    final countList = List.generate(10, (index) {
       final count = Obs(0);
       count.addListener(() {
         debugPrint('count$index更新');

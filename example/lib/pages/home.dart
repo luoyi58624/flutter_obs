@@ -1,6 +1,7 @@
 import 'package:example/pages/test.dart';
 import 'package:flutter/material.dart';
 import '1.dart';
+import '11.dart';
 import '2.dart';
 import '3.dart';
 import '4.dart';
@@ -108,6 +109,15 @@ class HomePage extends StatelessWidget {
                 );
               },
               child: const Text('10.Flutter_Hooks示例'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const ManualBindPage()),
+                );
+              },
+              child: const Text('11.手动绑定监听器'),
             ),
             ElevatedButton(
               onPressed: () {
