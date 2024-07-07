@@ -7,7 +7,7 @@ class SimplePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final countList = List.generate(10, (index) {
+    final countList = List.generate(1, (index) {
       final count = Obs(0);
       count.addListener(() {
         debugPrint('count$index更新');
@@ -28,8 +28,23 @@ class SimplePage extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () => count.value++,
                       child: ObsBuilder(
-                        builder: (_) =>
-                            Text('ObsBuilder count: ${count.value}'),
+                        builder: (_) => Text('ObsBuilder count: ${count.value}'),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => count.value++,
+                      child: ListenableBuilder(
+                        listenable: count,
+                        builder: (context, child) => Text('ListenableBuilder count: ${count.value}'),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => count.value++,
+                      child: ValueListenableBuilder(
+                        valueListenable: count,
+                        builder: (context, value, child) {
+                          return Text('ValueListenableBuilder count: $value');
+                        },
                       ),
                     ),
                   ],

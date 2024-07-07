@@ -20,12 +20,12 @@ class ObsBuilder extends StatefulWidget {
 
 class _ObsBuilderState extends State<ObsBuilder> {
   /// 保存绑定的响应式变量集合
-  final Set<Obs> dependObsList = {};
+  final Set<_NotidyWidget> dependObsList = {};
 
   /// 是否更新了 watch 依赖
   bool isUpdateWatch = false;
 
-  /// 开发环境下若更改了binding，需要进行添加或移除绑定的响应式变量
+  /// 开发环境下若更改了watch，需要进行添加或移除绑定的响应式变量
   @override
   void didUpdateWidget(covariant ObsBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -60,16 +60,16 @@ class _ObsBuilderState extends State<ObsBuilder> {
   @override
   void dispose() {
     for (var obs in dependObsList) {
-      obs.removeListener(_notify);
+      obs.notifys.remove(_notify);
     }
     super.dispose();
   }
 
   void _addWatch(List<Obs> watch) {
     for (final obs in watch) {
-      if (!obs._notifyFunList.contains(_notify)) {
+      if (!obs._notifyWidget.notifys.contains(_notify)) {
         obs.addListener(_notify);
-        dependObsList.add(obs);
+        dependObsList.add(obs._notifyWidget);
       }
     }
   }
@@ -77,7 +77,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
   void _removeWatch(List<Obs> watch) {
     for (final obs in watch) {
       obs.removeListener(_notify);
-      dependObsList.remove(obs);
+      dependObsList.remove(obs._notifyWidget);
     }
   }
 
