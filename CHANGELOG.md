@@ -1,3 +1,7 @@
+## 1.2.1
+
+feat: 继承ValueNotifier，并优化代码结构
+
 ## 1.2.0
 
 * feat: ObsBuilder添加 watch 参数

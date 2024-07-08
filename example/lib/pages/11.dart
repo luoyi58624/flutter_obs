@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_obs/flutter_obs.dart';
 
 final count1 = Obs(0);
@@ -139,6 +138,15 @@ class _ChildPage2State extends State<_ChildPage2> {
               child: ObsBuilder(builder: (context) {
                 return Text('count2: ${count2.value}');
               }),
+            ),
+            ElevatedButton(
+              onPressed: () => count2.value++,
+              child: ListenableBuilder(
+                listenable: count2,
+                builder: (context, child) {
+                  return Text('count2: ${count2.value}');
+                },
+              ),
             ),
             ElevatedButton(
               onPressed: count2.reset,

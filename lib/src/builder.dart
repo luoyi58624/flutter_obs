@@ -20,7 +20,7 @@ class ObsBuilder extends StatefulWidget {
 
 class _ObsBuilderState extends State<ObsBuilder> {
   /// 保存绑定的响应式变量集合
-  final Set<_NotidyWidget> dependObsList = {};
+  final Set<_NotifyWidget> dependNotifyList = {};
 
   /// 是否更新了 watch 依赖
   bool isUpdateWatch = false;
@@ -59,25 +59,25 @@ class _ObsBuilderState extends State<ObsBuilder> {
 
   @override
   void dispose() {
-    for (var obs in dependObsList) {
-      obs.notifys.remove(_notify);
+    for (var notify in dependNotifyList) {
+      notify.notifyList.remove(_notify);
     }
     super.dispose();
   }
 
   void _addWatch(List<Obs> watch) {
     for (final obs in watch) {
-      if (!obs._notifyWidget.notifys.contains(_notify)) {
-        obs.addListener(_notify);
-        dependObsList.add(obs._notifyWidget);
+      if (!obs._notifyWidget.notifyList.contains(_notify)) {
+        obs._notifyWidget.notifyList.add(_notify);
+        dependNotifyList.add(obs._notifyWidget);
       }
     }
   }
 
   void _removeWatch(List<Obs> watch) {
     for (final obs in watch) {
-      obs.removeListener(_notify);
-      dependObsList.remove(obs._notifyWidget);
+      obs._notifyWidget.notifyList.remove(_notify);
+      dependNotifyList.remove(obs._notifyWidget);
     }
   }
 
@@ -97,9 +97,9 @@ class _ObsBuilderState extends State<ObsBuilder> {
     // 3.销毁临时变量
     _notifyFun = null;
     // 4.在构建器中保存依赖的响应式变量集合
-    dependObsList.addAll(_dependObsList);
+    dependNotifyList.addAll(_dependNotifyList);
     // 5.销毁依赖的响应式变量集合
-    _dependObsList.clear();
+    _dependNotifyList.clear();
     // 6.如果设置了watch，则需要将监听的响应式变量添加到集合中
     if (widget.watch.isNotEmpty) {
       // 7.排除更新 watch 依赖，didUpdateWidget生命周期中已处理
