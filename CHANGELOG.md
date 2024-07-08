@@ -1,6 +1,10 @@
+## 1.2.2
+
+* chore: Obs添加重写toString方法
+
 ## 1.2.1
 
-feat: 继承ValueNotifier，并优化代码结构
+* feat: 继承ValueNotifier，并优化代码结构
 
 ## 1.2.0
 
@@ -9,7 +13,7 @@ feat: 继承ValueNotifier，并优化代码结构
 
 ## 1.1.1
 
-* chore: Obs移除toString，访问响应式变量应当都加上.value，统一写法
+* chore: Obs移除toString
 
 ## 1.1.0
 

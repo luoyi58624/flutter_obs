@@ -109,4 +109,10 @@ class Obs<T> extends ValueNotifier<T> {
     super.dispose();
     _notifyWidget.notifyList.clear();
   }
+
+  /// 如果将响应式变量当字符串使用，你可以省略.value
+  @override
+  String toString() {
+    return value.toString();
+  }
 }
