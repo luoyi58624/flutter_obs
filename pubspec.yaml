@@ -1,5 +1,5 @@
 name: flutter_obs
-description: "a easy flutter state management, the source code is less than 100, but you can use it to implement global and local states"
+description: "A easy state management, It is an enhanced version of ValueNotifier"
 version: 1.2.3
 homepage: https://github.com/luoyi58624/flutter_obs
 
@@ -16,5 +16,3 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
-
-flutter:
