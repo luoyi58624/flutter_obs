@@ -1,6 +1,6 @@
 name: flutter_obs
 description: "A easy state management, It is an enhanced version of ValueNotifier"
-version: 1.2.3
+version: 1.2.4
 homepage: https://github.com/luoyi58624/flutter_obs
 
 environment:
