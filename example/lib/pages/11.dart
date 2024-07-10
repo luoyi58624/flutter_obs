@@ -3,7 +3,6 @@ import 'package:flutter_obs/flutter_obs.dart';
 
 final count1 = Obs(0);
 final count2 = Obs(0);
-final count3 = Obs(0);
 
 class ManualBindPage extends StatefulWidget {
   const ManualBindPage({super.key});
@@ -19,6 +18,7 @@ class _ManualBindPageState extends State<ManualBindPage> {
   void dispose() {
     super.dispose();
     count1.reset();
+    count2.reset();
   }
 
   @override
@@ -43,10 +43,10 @@ class _ManualBindPageState extends State<ManualBindPage> {
                   builder: (_) => Text('count2: ${count2.value}'),
                 ),
               ),
-              ObsBuilder(
-                watch: [count1, count2],
-                builder: (_) => Text('count1和count2 build次数: ${buildCount++}'),
-              ),
+              // ObsBuilder(
+              //   watch: [count1, count2],
+              //   builder: (_) => Text('count1和count2 build次数: ${buildCount++}'),
+              // ),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).push(
@@ -72,86 +72,39 @@ class _ChildPage extends StatefulWidget {
 
 class _ChildPageState extends State<_ChildPage> {
   @override
-  Widget build(BuildContext context) {
-    return ObsBuilder(builder: (context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('子页面'),
-        ),
-        body: Center(
-          child: Column(
-            children: [
-              ElevatedButton(
-                onPressed: () => count1.value++,
-                child: Text('count1: ${count1.value}'),
-              ),
-              ElevatedButton(
-                onPressed: () => count2.value++,
-                child: Text('count2: ${count2.value}'),
-              ),
-              ElevatedButton(
-                onPressed: () => count3.value++,
-                child: Text('count3: ${count3.value}'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (context) => const _ChildPage2()),
-                  );
-                },
-                child: const Text('下一页2'),
-              ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-}
-
-class _ChildPage2 extends StatefulWidget {
-  const _ChildPage2();
-
-  @override
-  State<_ChildPage2> createState() => _ChildPage2State();
-}
-
-class _ChildPage2State extends State<_ChildPage2> {
-  @override
   void dispose() {
     super.dispose();
-    count2.reset();
+    count1.reset();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('子页面2 - 返回销毁count2'),
+        title: const Text('子页面 - 返回重置count1'),
       ),
       body: Center(
         child: Column(
           children: [
             ElevatedButton(
-              onPressed: () => count2.value++,
+              onPressed: () => count1.value++,
               child: ObsBuilder(builder: (context) {
-                return Text('count2: ${count2.value}');
+                return Text('count1: ${count1.value}');
               }),
             ),
             ElevatedButton(
-              onPressed: () => count2.value++,
+              onPressed: () => count1.value++,
               child: ListenableBuilder(
-                listenable: count2,
+                listenable: count1,
                 builder: (context, child) {
-                  return Text('count2: ${count2.value}');
+                  return Text('Listenable count1: ${count1.value}');
                 },
               ),
             ),
             ElevatedButton(
-              onPressed: count2.reset,
+              onPressed: count1.reset,
               child: ObsBuilder(builder: (context) {
-                return const Text('重置count2');
+                return const Text('重置count1');
               }),
             ),
           ],

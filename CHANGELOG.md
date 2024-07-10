@@ -1,3 +1,7 @@
+## 1.2.3
+
+* fix: ObsBuilder刷新函数移除下一帧回调，修复页面不刷新bug
+
 ## 1.2.2
 
 * chore: Obs添加重写toString方法

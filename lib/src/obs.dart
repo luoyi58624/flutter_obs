@@ -87,13 +87,13 @@ class Obs<T> extends ValueNotifier<T> {
     }
   }
 
-  /// 重置响应式变量状态，你可以在任意位置执行它，它和 [dispose] 不同，后者一旦执行该变量将不可再次使用，
-  /// 所以重置后它会触发一次所有监听器，然后清空保存的所有刷新函数列表，由于刷新页面函数会等到下一帧执行，
-  /// 所以清空后会再次和依赖它的小部件重新建立联系。
+  /// 重置响应式变量到初始状态，你可以在任意位置执行它
   void reset() {
     _value = _initialValue;
-    notify();
-    _notifyWidget.notifyList.clear();
+    // 延迟通知页面刷新，ObsBuilder触发 dispose 生命周期时不能在此期间执行setState
+    Future.delayed(const Duration(milliseconds: 100), () {
+      notify();
+    });
   }
 
   /// 添加监听器，如果响应式变量是局部变量，当小部件被销毁时它的所有监听器会自动回收，

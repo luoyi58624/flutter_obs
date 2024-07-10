@@ -40,6 +40,16 @@ class HooksPage extends HookWidget {
                 onPressed: () => count3.value++,
                 child: Text('useState count: ${count3.value}'),
               ),
+              ObsBuilder(builder: (context) {
+                return GestureDetector(
+                  onTap: () {
+                    count2.value++;
+                  },
+                  child: Text(
+                    'count2: ${count2.value}',
+                  ),
+                );
+              }),
             ],
           ),
         ),

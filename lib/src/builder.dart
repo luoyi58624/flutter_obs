@@ -83,9 +83,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
 
   /// 响应式变量发生变更就是执行此函数通知页面刷新
   void _notify() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() {});
-    });
+    if (mounted) setState(() {});
   }
 
   @override
