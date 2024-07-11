@@ -3,22 +3,20 @@ part of '../flutter_obs.dart';
 /// 临时变量 - [ObsBuilder]重建页面函数
 VoidCallback? _notifyFun;
 
-/// 临时变量 - 保存 [ObsBuilder] 依赖的响应式变量列表
-Set<_NotifyWidget> _dependNotifyList = {};
+/// 临时变量 - 一个 [ObsBuilder] 小部件可以存在多个[Obs]，此集合就是临时保存多个 [Obs] 通知实例
+Set<_Notify> _dependNotifyList = {};
 
-/// 通知小部件刷新函数集合，它只包含一个集合，保存刷新 [ObsBuilder] 小部件方法，
-/// 它是 [Obs]、[ObsBuilder] 之间的枢纽，二者都会相互保存之间的所有依赖。
-class _NotifyWidget {
-  final List<VoidCallback> notifyList = [];
+/// 通知小部件刷新函数集合，它是 [Obs]、[ObsBuilder] 之间的枢纽
+class _Notify {
+  final List<VoidCallback> list = [];
 }
 
 /// 声明一个响应式变量，它会收集所有依赖此变量的 [ObsBuilder] 刷新方法，
 /// 当你通过.value更新时会自动重建小部件，但操作 List、Map 等对象时，
-/// 如果不传递完整的对象实例 setter 方法是无法拦截更新的，在这种情况下，
-/// 你可以调用 [notify] 方法以手动形式通知小部件更新。
+/// 如果不传递完整的对象实例 setter 方法将无法拦截更新，在这种情况下，
+/// 你可以手动调用 [notify] 方法通知小部件更新。
 ///
-/// 它虽然继承[ValueNotifier]，但核心逻辑并不依赖它，继承它只是为了扩展性，
-/// 你可以将 [Obs] 当作 [ValueNotifier] 的增强版，以下是三种使用示例：
+/// 它继承[ValueNotifier]，除了[ObsBuilder]外，它也支持其他使用方式：
 ///
 /// ```dart
 /// const count = Obs(0);
@@ -42,14 +40,13 @@ class _NotifyWidget {
 /// ),
 /// ```
 class Obs<T> extends ValueNotifier<T> {
-  /// 创建一个响应式变量，你可以在任意位置声明它
+  /// 创建一个响应式变量
   Obs(this._value) : super(_value) {
     this._initialValue = _value;
   }
 
-  /// 保存更新 [ObsBuilder] 重建方法，[ChangeNotifier]保存的是用户自定义添加的监听器，
-  /// 将其分开来是为了执行 [reset] 方法时不会影响到用户添加的监听器
-  final _NotifyWidget _notifyWidget = _NotifyWidget();
+  /// 通知 [ObsBuilder] 小部件更新实例
+  final _Notify _notify = _Notify();
 
   /// 保存 [_value] 的初始值，当执行 [reset] 重置方法时应用它
   late T _initialValue;
@@ -62,9 +59,9 @@ class Obs<T> extends ValueNotifier<T> {
   T get value {
     if (_notifyFun != null) {
       final fun = _notifyFun!;
-      if (!_notifyWidget.notifyList.contains(fun)) {
-        _notifyWidget.notifyList.add(fun);
-        _dependNotifyList.add(_notifyWidget);
+      if (!_notify.list.contains(fun)) {
+        _notify.list.add(fun);
+        _dependNotifyList.add(_notify);
       }
     }
     return _value;
@@ -82,7 +79,7 @@ class Obs<T> extends ValueNotifier<T> {
   /// 通知所有依赖此响应式变量的小部件进行刷新
   void notify() {
     notifyListeners();
-    for (var fun in _notifyWidget.notifyList) {
+    for (var fun in _notify.list) {
       fun();
     }
   }
@@ -90,8 +87,8 @@ class Obs<T> extends ValueNotifier<T> {
   /// 重置响应式变量到初始状态，你可以在任意位置执行它
   void reset() {
     _value = _initialValue;
-    // 延迟通知页面刷新，ObsBuilder触发 dispose 生命周期时不能在此期间执行setState
-    Future.delayed(const Duration(milliseconds: 100), () {
+    // 一般会在 dispose 生命周期中执行重置，如果不加延迟会导致 setState 异常
+    Future.delayed(const Duration(milliseconds: 1), () {
       notify();
     });
   }
@@ -107,7 +104,7 @@ class Obs<T> extends ValueNotifier<T> {
   @override
   void dispose() {
     super.dispose();
-    _notifyWidget.notifyList.clear();
+    _notify.list.clear();
   }
 
   /// 如果将响应式变量当字符串使用，你可以省略.value

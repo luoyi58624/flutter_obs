@@ -20,7 +20,7 @@ class ObsBuilder extends StatefulWidget {
 
 class _ObsBuilderState extends State<ObsBuilder> {
   /// 保存绑定的响应式变量集合
-  final Set<_NotifyWidget> dependNotifyList = {};
+  final Set<_Notify> dependNotifyList = {};
 
   /// 是否更新了 watch 依赖
   bool isUpdateWatch = false;
@@ -60,24 +60,24 @@ class _ObsBuilderState extends State<ObsBuilder> {
   @override
   void dispose() {
     for (var notify in dependNotifyList) {
-      notify.notifyList.remove(_notify);
+      notify.list.remove(_notify);
     }
     super.dispose();
   }
 
   void _addWatch(List<Obs> watch) {
     for (final obs in watch) {
-      if (!obs._notifyWidget.notifyList.contains(_notify)) {
-        obs._notifyWidget.notifyList.add(_notify);
-        dependNotifyList.add(obs._notifyWidget);
+      if (!obs._notify.list.contains(_notify)) {
+        obs._notify.list.add(_notify);
+        dependNotifyList.add(obs._notify);
       }
     }
   }
 
   void _removeWatch(List<Obs> watch) {
     for (final obs in watch) {
-      obs._notifyWidget.notifyList.remove(_notify);
-      dependNotifyList.remove(obs._notifyWidget);
+      obs._notify.list.remove(_notify);
+      dependNotifyList.remove(obs._notify);
     }
   }
 

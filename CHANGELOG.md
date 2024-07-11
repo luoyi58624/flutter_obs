@@ -1,39 +1,44 @@
+## 1.2.4
+
+* chore: update CHANGELOG.md to English.
+
 ## 1.2.3
 
-* fix: ObsBuilder刷新函数移除下一帧回调，修复页面不刷新bug
+* fix: ObsBuilder notify fun remove addPostFrameCallback, Because it may cause the page not to
+  refresh
 
 ## 1.2.2
 
-* chore: Obs添加重写toString方法
+* chore: Obs add toString (roll-back)
 
 ## 1.2.1
 
-* feat: 继承ValueNotifier，并优化代码结构
+* feat: extended ValueNotifier (roll-back)
 
 ## 1.2.0
 
-* feat: ObsBuilder添加 watch 参数
-* fix: 修复移除监听函数泄漏问题
+* feat: ObsBuilder add watch attr
+* fix: fix remove listen fun leakage bug
 
 ## 1.1.1
 
-* chore: Obs移除toString
+* chore: Obs remove toString
 
 ## 1.1.0
 
-* feat: Obs不再继承ValueNotifier，只实现Listenable接口
+* feat: Obs don't extended ValueNotifier，only impl Listenable接口
 
 ## 1.0.1
 
-* chore: 精简Obs注释
+* chore: simplify Obs docs
 
 ## 1.0.0
 
-* feat: 增强扩展性，支持flutter_hooks
+* feat: enhanced scalability，support flutter_hooks
 
 ## 0.0.2
 
-* chore: 更新文档
+* chore: update docs
 
 ## 0.0.1
 
