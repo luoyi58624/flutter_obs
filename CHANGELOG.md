@@ -2,6 +2,10 @@
 
 * chore: update CHANGELOG.md to English.
 
+## 1.2.4
+
+* chore: update example and desc
+
 ## 1.2.3
 
 * fix: ObsBuilder notify fun remove addPostFrameCallback, Because it may cause the page not to
