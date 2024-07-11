@@ -9,9 +9,9 @@ class SimplePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final countList = List.generate(1, (index) {
       final count = Obs(0);
-      // count.addListener(() {
-      //   debugPrint('count$index更新');
-      // });
+      count.addListener(() {
+        debugPrint('count$index更新');
+      });
       return count;
     });
     return Scaffold(
@@ -25,44 +25,28 @@ class SimplePage extends StatelessWidget {
               ...countList.map(
                 (count) => Column(
                   children: [
-                    ObsBuilder(builder: (context) {
-                      return GestureDetector(
-                        onTap: () {
-                          count.value++;
-                        },
-                        child: Text(
-                          'count: ${count.value}',
-                        ),
-                      );
-                    }),
-                    GestureDetector(
-                      onTap: () {
-                        count.reset();
-                      },
-                      child: const Text('重置'),
+                    ElevatedButton(
+                      onPressed: () => count.value++,
+                      child: ObsBuilder(
+                        builder: (_) => Text('ObsBuilder count: ${count.value}'),
+                      ),
                     ),
-                    // ElevatedButton(
-                    //   onPressed: () => count.value++,
-                    //   child: ObsBuilder(
-                    //     builder: (_) => Text('ObsBuilder count: ${count.value}'),
-                    //   ),
-                    // ),
-                    // ElevatedButton(
-                    //   onPressed: () => count.value++,
-                    //   child: ListenableBuilder(
-                    //     listenable: count,
-                    //     builder: (context, child) => Text('ListenableBuilder count: ${count.value}'),
-                    //   ),
-                    // ),
-                    // ElevatedButton(
-                    //   onPressed: () => count.value++,
-                    //   child: ValueListenableBuilder(
-                    //     valueListenable: count,
-                    //     builder: (context, value, child) {
-                    //       return Text('ValueListenableBuilder count: $value');
-                    //     },
-                    //   ),
-                    // ),
+                    ElevatedButton(
+                      onPressed: () => count.value++,
+                      child: ListenableBuilder(
+                        listenable: count,
+                        builder: (context, child) => Text('ListenableBuilder count: ${count.value}'),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => count.value++,
+                      child: ValueListenableBuilder(
+                        valueListenable: count,
+                        builder: (context, value, child) {
+                          return Text('ValueListenableBuilder count: $value');
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
