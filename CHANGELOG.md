@@ -1,6 +1,6 @@
-## 1.2.4
+## 1.2.6
 
-* chore: update CHANGELOG.md to English.
+* feat: Obs instance add watch and immediate Parameter
 
 ## 1.2.4
 

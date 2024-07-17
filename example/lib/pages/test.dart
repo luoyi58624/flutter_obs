@@ -9,7 +9,18 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
-  final count = Obs(0);
+  late final count = Obs<int>(0, watch: [
+    (newValue, oldValue) {
+      print('新值：$newValue   旧值：$oldValue');
+    },
+    countWatch,
+  ]);
+
+  final count2 = Obs(0);
+
+  void countWatch(int newValue, int oldValue) {
+    count2.value = newValue * 2;
+  }
 
   // final count2 = Obs(0);
   // final count3 = Obs(0);
@@ -45,6 +56,10 @@ class _TestPageState extends State<TestPage> {
                 ),
                 // child: Text('count: ${count.value}'),
               ),
+
+              ObsBuilder(builder: (context) {
+                return Text('count2: ${count2.value}');
+              }),
               // Column(
               //   children: [
               //     ElevatedButton(
