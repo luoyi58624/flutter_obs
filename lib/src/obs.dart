@@ -51,12 +51,13 @@ class Obs<T> extends ValueNotifier<T> {
   /// * watch 创建响应式变量的同时注入监听回调函数
   /// * immediate 是否立即执行注册的监听函数，默认false
   ///
-  /// 注意：由于 Dart 的限制，如果你的监听函数依赖 oldValue，那么你一定要确保此响应式变量是自动刷新，
-  /// 不能通过手动执行 notify 方法来逃避 setting 方法拦截，否则 oldValue 的值不会发生更改。
+  /// 注意：oldValue 的更新发生在 setting 方法中，如果你的监听函数依赖 oldValue，
+  /// 那么一定要确保是通过 .value 更新变量
   Obs(
     this._value, {
     List<ObsWatchCallback<T>>? watch,
     bool immediate = false,
+    this.auto = true,
   }) : super(_value) {
     this._initialValue = _value;
     this._oldValue = _value;
@@ -77,6 +78,10 @@ class Obs<T> extends ValueNotifier<T> {
 
   /// 上一次 [_value] 值
   late T _oldValue;
+
+  /// 当通过 .value 更新时是否自动刷新小部件，如果你需要手动控制，请将其设置为 false，
+  /// 你既可以从构造函数中初始化它，也可以在任意代码中动态修改它
+  bool auto;
 
   /// 响应式对象
   T _value;
@@ -100,7 +105,7 @@ class Obs<T> extends ValueNotifier<T> {
     if (_value != newValue) {
       _oldValue = _value;
       _value = newValue;
-      notify();
+      if (auto) notify();
     }
   }
 
@@ -128,21 +133,17 @@ class Obs<T> extends ValueNotifier<T> {
     });
   }
 
+  /// 添加监听函数，提示：它和 [addListener] 本质上完全一样，
+  /// 不过此回调可以接收 newValue、oldValue 两个参数
   void addWatch(ObsWatchCallback<T> fun) {
     if (_watchFunNotify.list.contains(fun) == false) {
       _watchFunNotify.list.add(fun);
     }
   }
 
+  /// 移除监听函数
   void removeWatch(ObsWatchCallback<T> fun) {
     _watchFunNotify.list.remove(fun);
-  }
-
-  /// 添加监听器，如果响应式变量是局部变量，当小部件被销毁时它的所有监听器会自动回收，
-  /// 但如果是全局状态，当不再使用时你必须手动移除添加的监听器，或者调用 [dispose] 方法销毁所有副作用。
-  @override
-  void addListener(VoidCallback listener) {
-    super.addListener(listener);
   }
 
   /// 释放所有监听器，一旦执行此变量将不可再次使用

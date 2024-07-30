@@ -1,6 +1,6 @@
-## 1.2.6
+## 1.3.0
 
-* feat: Obs instance add watch and immediate Parameter
+* feat: add auto argument, allows users to manually control widget refresh
 
 ## 1.2.4
 
