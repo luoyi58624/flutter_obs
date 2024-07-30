@@ -1,6 +1,14 @@
+## 1.3.1
+
+* chore: remove flutter_hook and useObs function
+
 ## 1.3.0
 
 * feat: add auto argument, allows users to manually control widget refresh
+
+## 1.2.6
+
+* feat: Obs instance add watch and immediate Parameter
 
 ## 1.2.4
 

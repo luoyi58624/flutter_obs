@@ -10,7 +10,6 @@ import '6.dart';
 import '7.dart';
 import '8.dart';
 import '9.dart';
-import '10.dart';
 import 'change_notify_test.dart';
 
 class HomePage extends StatelessWidget {
@@ -101,14 +100,6 @@ class HomePage extends StatelessWidget {
                 );
               },
               child: const Text('9.模拟Getx状态管理'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const HooksPage()),
-                );
-              },
-              child: const Text('10.Flutter_Hooks示例'),
             ),
             ElevatedButton(
               onPressed: () {
