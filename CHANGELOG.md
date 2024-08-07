@@ -1,3 +1,7 @@
+## 1.4.0
+
+* feat: remove Obs watch List type
+
 ## 1.3.1
 
 * chore: remove flutter_hook and useObs function

@@ -48,21 +48,22 @@ class _WatchFunNotify<T> {
 /// ```
 class Obs<T> extends ValueNotifier<T> {
   /// 创建一个响应式变量
+  /// * auto 当响应式变量发生变化时，是否自动触发所有注册的通知函数
   /// * watch 创建响应式变量的同时注入监听回调函数
-  /// * immediate 是否立即执行注册的监听函数，默认false
+  /// * immediate 是否立即执行一次监听函数，默认false
   ///
-  /// 注意：oldValue 的更新发生在 setting 方法中，如果你的监听函数依赖 oldValue，
-  /// 那么一定要确保是通过 .value 更新变量
+  /// 注意：watch 监听函数第二个参数 oldValue 的更新发生在 setting 方法中，
+  /// 如果你的监听函数依赖 oldValue，那么一定要确保是通过 .value 更新变量
   Obs(
     this._value, {
-    List<ObsWatchCallback<T>>? watch,
-    bool immediate = false,
     this.auto = true,
+    ObsWatchCallback<T>? watch,
+    bool immediate = false,
   }) : super(_value) {
     this._initialValue = _value;
-    this._oldValue = _value;
-    if (watch != null && watch.isNotEmpty) {
-      _watchFunNotify.list.addAll(watch);
+    this.oldValue = _value;
+    if (watch != null) {
+      _watchFunNotify.list.add(watch);
       if (immediate) _notifyWatchFun();
     }
   }
@@ -77,7 +78,7 @@ class Obs<T> extends ValueNotifier<T> {
   late T _initialValue;
 
   /// 上一次 [_value] 值
-  late T _oldValue;
+  late T oldValue;
 
   /// 当通过 .value 更新时是否自动刷新小部件，如果你需要手动控制，请将其设置为 false，
   /// 你既可以从构造函数中初始化它，也可以在任意代码中动态修改它
@@ -103,7 +104,7 @@ class Obs<T> extends ValueNotifier<T> {
   @override
   set value(T newValue) {
     if (_value != newValue) {
-      _oldValue = _value;
+      oldValue = _value;
       _value = newValue;
       if (auto) notify();
     }
@@ -120,7 +121,7 @@ class Obs<T> extends ValueNotifier<T> {
 
   void _notifyWatchFun() {
     for (var fun in _watchFunNotify.list) {
-      fun(this._value, this._oldValue);
+      fun(this._value, this.oldValue);
     }
   }
 

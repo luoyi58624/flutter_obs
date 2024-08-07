@@ -1,6 +1,6 @@
 name: flutter_obs
 description: "a easy flutter state management, the source code is less than 100, but you can use it to implement global and local states"
-version: 1.3.1
+version: 1.4.0
 homepage: https://github.com/luoyi58624/flutter_obs
 
 environment:
