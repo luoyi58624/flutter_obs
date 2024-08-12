@@ -137,6 +137,7 @@ class _ExampleState extends State<Example> {
 }
 ```
 
-总结：这个库的定位就是用于替代 ValueNotifier，它只用于满足一般的状态管理需求，而不是大而全的解决方案，
-同时，它的核心逻辑实际上是借鉴[Getx](https://github.com/jonataslaw/getx)，我很喜欢 Getx 的简单性、易用性，
-但我不喜欢它的 router、http 等各种杂七杂八的东西。
+总结：这个库的定位就是用于替代 ValueNotifier，整包源码除去注释只有200行左右，它的目的只用于满足一般的状态管理需求，
+而不是大而全的解决方案。
+
+题外话：它的核心逻辑是借鉴[Getx](https://github.com/jonataslaw/getx)
