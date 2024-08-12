@@ -118,7 +118,7 @@ class _ExampleState extends State<Example> {
   @override
   void initState() {
     super.initState();
-    controller = _Controller();
+    controller = Controller();
   }
 
   @override
