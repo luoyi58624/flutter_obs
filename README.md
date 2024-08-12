@@ -25,7 +25,7 @@ class Example extends StatelessWidget {
 
 ### 2. 使用hook，弥补 StatelessWidget 的缺陷
 
-为了稳定性，此库不依赖任何第三方库，所以移除掉了 flutter_hook 依赖及其相关代码，但封装的代码很简单，
+为了稳定性，此库不依赖任何第三方库，所以移除掉了 flutter_hook 依赖及其相关代码，封装的代码很简单，
 请看[useObs](https://github.com/luoyi58624/flutter_obs/blob/main/use_obs.md)
 
 ```dart
@@ -140,4 +140,5 @@ class _ExampleState extends State<Example> {
 总结：这个库的定位就是用于替代 ValueNotifier，整包源码除去注释只有200行左右，它的目的只用于满足一般的状态管理需求，
 而不是大而全的解决方案。
 
-题外话：它的核心逻辑是借鉴[Getx](https://github.com/jonataslaw/getx)
+题外话：它的核心逻辑是借鉴[Getx](https://github.com/jonataslaw/getx)，它的源码实现看起来很绕，
+但完全梳理并精简后会发现其实很简单，核心逻辑仅有10行左右，同时，每一步我都编写了注释。

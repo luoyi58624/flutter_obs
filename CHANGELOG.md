@@ -1,3 +1,7 @@
+## 1.4.1
+
+* feat: update docs
+
 ## 1.4.0
 
 * feat: remove Obs watch List type

@@ -19,7 +19,9 @@ class ObsBuilder extends StatefulWidget {
 }
 
 class _ObsBuilderState extends State<ObsBuilder> {
-  /// 保存绑定的响应式变量集合
+  /// 保存绑定的响应式变量集合，[Obs] 和 [ObsBuilder] 是多对多关系，
+  /// [Obs] 保存的是多个 [ObsBuilder] 的刷新方法，而 [ObsBuilder] 可以引用多个 [Obs] 变量，
+  /// 当组件被销毁时，需要通知所有引用此 [ObsBuilder] 的响应式变量移除它的刷新方法。
   final Set<_Notify> dependNotifyList = {};
 
   /// 是否更新了 watch 依赖
