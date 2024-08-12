@@ -1,6 +1,11 @@
+## 1.4.2
+
+* chore: update docs
+
+
 ## 1.4.1
 
-* feat: update docs
+* chore: update docs
 
 ## 1.4.0
 

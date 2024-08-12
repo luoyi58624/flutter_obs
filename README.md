@@ -250,8 +250,5 @@ class Example extends StatelessWidget {
 }
 ```
 
-总结：这个库的定位就是用于替代 ValueNotifier，整包源码除去注释只有200行左右，它的目的只用于满足一般的状态管理需求，
-而不是大而全的解决方案。
-
-题外话：它的核心逻辑是借鉴[Getx](https://github.com/jonataslaw/getx)，它的源码实现看起来很绕，
-但完全梳理并精简后会发现其实很简单，具体核心逻辑仅有10行左右。
+这个库的定位就是用于替代 ValueNotifier，整包源码除去注释只有200行左右，它的目的只用于满足一般的状态管理需求，
+而不是大而全的解决方案，它的核心逻辑是借鉴[Getx](https://github.com/jonataslaw/getx)。
