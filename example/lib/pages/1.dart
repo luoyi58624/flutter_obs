@@ -28,14 +28,16 @@ class SimplePage extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () => count.value++,
                       child: ObsBuilder(
-                        builder: (_) => Text('ObsBuilder count: ${count.value}'),
+                        builder: (_) =>
+                            Text('ObsBuilder count: ${count.value}'),
                       ),
                     ),
                     ElevatedButton(
                       onPressed: () => count.value++,
                       child: ListenableBuilder(
                         listenable: count,
-                        builder: (context, child) => Text('ListenableBuilder count: ${count.value}'),
+                        builder: (context, child) =>
+                            Text('ListenableBuilder count: ${count.value}'),
                       ),
                     ),
                     ElevatedButton(

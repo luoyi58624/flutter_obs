@@ -137,8 +137,121 @@ class _ExampleState extends State<Example> {
 }
 ```
 
+### 6. 手动刷新
+
+Obs 提供了 auto 选项，用于控制当响应式变量发生变更时是否自动执行 notify 方法刷新页面，如果你需要手动刷新，请将其设置为false，
+同时，它没有被设计为 final，所以你可以在任意位置修改它，用于精确控制修改变量时是否要自动刷新页面。
+
+```dart
+class Example extends StatelessWidget {
+  const Example({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final count = Obs(0, auto: false);
+    return ElevatedButton(
+      onPressed: () {
+        count.value++;
+        count.notify(); // 手动刷新
+
+        count.auto = false; // 手动禁止自动刷新
+        count.value++;
+        // ...
+        count.auto = true; // 还原
+      },
+      child: ObsBuilder(builder: (context) => Text('count: ${count.value}')),
+    );
+  }
+}
+```
+
+### 7. 添加监听函数
+
+Obs提供了 watch 选项，它可以在创建响应式变量的同时绑定监听逻辑，你还可以设置 immediate 选项触发立即执行一次监听函数，
+它的触发时机便是执行了 notify 函数。
+
+注意：oldValue 依赖于 setter 方法的执行，当你的响应式变量值是一个对象时，你最好通过 .value 进行更新，
+而非手动调用 notify 方法去刷新页面，否则 oldValue 不会同步上一次值，当然，你也可以手动修改 oldValue。
+
+对于局部绑定，你可以手动调用 addWatch、removeWatch，由于 Obs 继承 ValueNotifier，
+所以你也可以使用 addListener、removeListener 等api，区别在于前者会传递两个参数：newValue、oldValue。
+
+```dart
+class GlobalState {
+  // 开启重采样机制，开启此功能可以让高刷手机拥有更平滑的触控，但缺点是会带来一点延迟
+  static final enableResampling = Obs(
+    true,
+    immediate: true,
+    watch: (newValue, oldValue) {
+      GestureBinding.instance.resamplingEnabled = newValue;
+    },
+  );
+}
+```
+
+### 7. ObsBuilder监听其他响应式变量
+
+ObsBuilder 也提供了 watch 选项，与 Obs 不同的是，它接收 Obs 数组，当监听的任意一个变量发生变化时，都会重新构建小部件
+
+```dart
+class Example extends StatelessWidget {
+  const Example({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final count1 = Obs(0);
+    final count2 = Obs(0);
+    return ElevatedButton(
+      onPressed: () => count2.value++,
+      child: ObsBuilder(
+        // 当 count2 更新时，也会重建小部件，即使小部件构建函数中没有使用 count2 变量
+        watch: [count2],
+        builder: (context) => Text('count: ${count1.value}'),
+      ),
+    );
+  }
+}
+```
+
+### 8. 响应式变量 - 对象
+
+为什么修改 List、Map 等对象时不会触发自动刷新？这是 dart 的缺陷，dart 只能通过 setter 方法拦截对象的更改，
+当你使用对象的api时，setter 方法无法拦截，自然无法触发自动刷新，这种情况下你有两个选择：
+
+1. 通过 .value 进行整个对象的修改
+2. 手动执行 notify 方法触发刷新
+
+```dart
+class Example extends StatelessWidget {
+  const Example({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = Obs({
+      'name': 'hihi',
+      'age': 20,
+    });
+    return ElevatedButton(
+      onPressed: () {
+        user.value = {
+          ...user.value,
+          'name': 'xx',
+        };
+
+        // 或者手动刷新
+        user.value['name'] = 'xx';
+        user.notify();
+      },
+      child: ObsBuilder(
+        builder: (context) => Text('user name: ${user.value["name"]}'),
+      ),
+    );
+  }
+}
+```
+
 总结：这个库的定位就是用于替代 ValueNotifier，整包源码除去注释只有200行左右，它的目的只用于满足一般的状态管理需求，
 而不是大而全的解决方案。
 
 题外话：它的核心逻辑是借鉴[Getx](https://github.com/jonataslaw/getx)，它的源码实现看起来很绕，
-但完全梳理并精简后会发现其实很简单，核心逻辑仅有10行左右，同时，每一步我都编写了注释。
+但完全梳理并精简后会发现其实很简单，具体核心逻辑仅有10行左右。
