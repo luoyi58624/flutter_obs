@@ -64,6 +64,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
     for (var notify in dependNotifyList) {
       notify.list.remove(_notify);
     }
+    dependNotifyList.clear();
     super.dispose();
   }
 

@@ -19,11 +19,11 @@ class _WatchFunNotify<T> {
 }
 
 /// 声明一个响应式变量，它会收集所有依赖此变量的 [ObsBuilder] 刷新方法，
-/// 当你通过.value更新时会自动重建小部件，但操作 List、Map 等对象时，
+/// 当你通过 .value 更新时会自动重建小部件，但操作 List、Map 等对象时，
 /// 如果不传递完整的对象实例 setter 方法将无法拦截更新，在这种情况下，
 /// 你可以手动调用 [notify] 方法通知小部件更新。
 ///
-/// 它因为继承[ValueNotifier]，所以支持多种使用方式：
+/// [Obs] 继承自 [ValueNotifier]，所以支持多种使用方式：
 ///
 /// ```dart
 /// const count = Obs(0);
@@ -46,14 +46,20 @@ class _WatchFunNotify<T> {
 ///   },
 /// ),
 /// ```
+///
+/// 提示：Flutter 提供的控制器基本都继承 [ChangeNotifier]，当你使用它们时，
+/// Flutter 官方都要求你在销毁小部件时执行 dispose 方法，来防止内存泄漏。
+///
+/// 但当你将 [Obs] 作为局部状态时，你不必刻意地执行 dispose 方法来防止内存泄漏，
+/// 因为 [Obs] 的原理很简单，就是保存依赖它的小部件更新方法，从理论上来讲，
+/// 当一个对象被销毁时，它内部的所有状态都会被 Dart 垃圾回收器回收，这点同样适用于
+/// [ListenableBuilder]、[ValueListenableBuilder] 等小部件。
+
 class Obs<T> extends ValueNotifier<T> {
   /// 创建一个响应式变量
   /// * auto 当响应式变量发生变化时，是否自动触发所有注册的通知函数
   /// * watch 创建响应式变量的同时注入监听回调函数
   /// * immediate 是否立即执行一次监听函数，默认false
-  ///
-  /// 注意：watch 监听函数第二个参数 oldValue 的更新发生在 setting 方法中，
-  /// 如果你的监听函数依赖 oldValue，那么一定要确保是通过 .value 更新变量
   Obs(
     this._value, {
     this.auto = true,
@@ -77,7 +83,8 @@ class Obs<T> extends ValueNotifier<T> {
   /// 保存 [_value] 的初始值，当执行 [reset] 重置方法时应用它
   late T _initialValue;
 
-  /// 上一次 [_value] 值
+  /// 上一次 [_value] 值，如果是一个对象，若不通过 .value 完整更新那么 setter 方法将无法拦截，
+  /// oldValue 将不会变化，但你可以手动修改它
   late T oldValue;
 
   /// 当通过 .value 更新时是否自动刷新小部件，如果你需要手动控制，请将其设置为 false，
