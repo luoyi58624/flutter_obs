@@ -47,18 +47,13 @@ class _WatchFunNotify<T> {
 /// ),
 /// ```
 ///
-/// 提示：Flutter 提供的控制器基本都继承 [ChangeNotifier]，当你使用它们时，
-/// Flutter 官方都要求你在销毁小部件时执行 dispose 方法，来防止内存泄漏。
-///
-/// 但当你将 [Obs] 作为局部状态时，你不必刻意地执行 dispose 方法来防止内存泄漏，
-/// 因为 [Obs] 的原理很简单，就是保存依赖它的小部件更新方法，从理论上来讲，
-/// 当一个对象被销毁时，它内部的所有状态都会被 Dart 垃圾回收器回收，这点同样适用于
-/// [ListenableBuilder]、[ValueListenableBuilder] 等小部件。
-
+/// 提示：当你将 [Obs] 作为局部状态时，正常情况下你不需要执行 dispose 方法进行销毁，
+/// 执行 dispose 只是清空 [ChangeNotifier] 中 List 数组，无论是使用 [ObsBuilder]，
+/// 还是 [ValueListenableBuilder]，当这些小部件被卸载时都会自动移除监听方法。
 class Obs<T> extends ValueNotifier<T> {
   /// 创建一个响应式变量
-  /// * auto 当响应式变量发生变化时，是否自动触发所有注册的通知函数
-  /// * watch 创建响应式变量的同时注入监听回调函数
+  /// * auto 当响应式变量发生变化时，是否自动触发所有注册的通知函数，默认true
+  /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
   Obs(
     this._value, {
