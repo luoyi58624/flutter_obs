@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'pages/home.dart';
+import 'package:flutter_obs/flutter_obs.dart';
 
 void main() {
   runApp(const MainApp());
@@ -12,10 +11,27 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        materialTapTargetSize: MaterialTapTargetSize.padded,
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Home'),
+        ),
+        body: const Center(
+          child: Example(),
+        ),
       ),
-      home: const HomePage(),
+    );
+  }
+}
+
+class Example extends StatelessWidget {
+  const Example({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final count = Obs(0);
+    return ElevatedButton(
+      onPressed: () => count.value++,
+      child: ObsBuilder(builder: (context) => Text('count: ${count.value}')),
     );
   }
 }
