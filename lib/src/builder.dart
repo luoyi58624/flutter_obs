@@ -59,6 +59,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
     }
   }
 
+  /// 小部件被销毁时移除副作用
   @override
   void dispose() {
     for (var notify in dependNotifyList) {

@@ -14,6 +14,7 @@ class _Notify<T> {
   final List<VoidCallback> list = [];
 }
 
+/// 用户添加的监听函数集合
 class _WatchFunNotify<T> {
   final List<ObsWatchCallback<T>> list = [];
 }
