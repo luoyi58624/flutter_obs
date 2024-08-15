@@ -96,10 +96,10 @@ class HomePage extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                      builder: (context) => const GetxStatePage()),
+                      builder: (context) => const TempGlobalStatePage()),
                 );
               },
-              child: const Text('9.模拟Getx状态管理'),
+              child: const Text('9.页面销毁时移除全局控制器状态'),
             ),
             ElevatedButton(
               onPressed: () {

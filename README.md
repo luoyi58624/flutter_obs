@@ -106,7 +106,12 @@ class Example extends StatelessWidget {
 先定义一个允许为空的控制器，当组件挂载时进行初始化，被销毁时将其设置为 null 即可
 
 ```dart
-Controller? controller;
+Controller? _controller;
+
+Controller get controller {
+  assert(_controller != null, 'Controller 还未初始化');
+  return _controller!;
+}
 
 class Controller {
   final count = Obs(0);
@@ -124,7 +129,7 @@ class _ExampleState extends State<Example> {
   @override
   void initState() {
     super.initState();
-    controller = Controller();
+    _controller = Controller();
   }
 
   @override
@@ -136,14 +141,78 @@ class _ExampleState extends State<Example> {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () => controller!.count.value++,
-      child: ObsBuilder(builder: (context) => Text('count: ${controller!.count.value}')),
+      onPressed: () => controller.count.value++,
+      child: ObsBuilder(builder: (context) => Text('count: ${controller.count.value}')),
     );
   }
 }
 ```
 
-### 6. 手动刷新
+### 6. 依赖注入
+
+Obs可以轻松和 InheritedWidget 或 Provider 进行集成，以下是 InheritedWidget 的使用示例，
+Provider 是对 InheritedWidget 进行的封装，用法都是一样
+
+```dart
+/// 创建依赖注入小部件
+class ProviderData extends InheritedWidget {
+  const ProviderData({
+    required super.child,
+    required this.count,
+  });
+
+  final Obs count;
+
+  static ProviderData of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ProviderData>()!;
+
+  @override
+  bool updateShouldNotify(ProviderData oldWidget) => true;
+}
+
+class Example extends StatelessWidget {
+  const Example({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final count = Obs(0);
+    return Scaffold(
+      // 注入依赖
+      body: ProviderData(
+        count: count,
+        child: Column(
+          children: [
+            ObsBuilder(builder: (context) {
+              return Text('parent count: ${data.count.value}');
+            }),
+            const Child(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Child extends StatelessWidget {
+  const Child({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // 子组件获取祖先注入的依赖
+    final data = ProviderData.of(context);
+    return ElevatedButton(
+      onPressed: () {
+        data.count.value++;
+      },
+      child: ObsBuilder(builder: (context) {
+        return Text('child count: ${data.count.value}');
+      }),
+    );
+  }
+}
+```
+
+### 7. 手动刷新
 
 Obs 提供了 auto 变量用于控制是否自动刷新页面
 
@@ -159,10 +228,11 @@ class Example extends StatelessWidget {
         count.value++;
         count.notify(); // 手动刷新
 
-        count.auto = false; // 手动禁止自动刷新
+        count.auto = false; // 你可以随时控制是否要自动刷新页面
         count.value++;
-        // ...
-        count.auto = true; // 还原
+        // 处理其他逻辑...
+        count.notify();
+        count.auto = true;
       },
       child: ObsBuilder(builder: (context) => Text('count: ${count.value}')),
     );
@@ -170,7 +240,7 @@ class Example extends StatelessWidget {
 }
 ```
 
-### 7. 添加监听函数
+### 8. 添加监听函数
 
 Obs提供了 watch 选项，在创建响应式变量的同时绑定监听逻辑，你还可以设置 immediate 选项触发立即执行一次监听函数，
 它的触发时机便是执行了 notify 函数。
@@ -190,7 +260,7 @@ class GlobalState {
 }
 ```
 
-### 7. ObsBuilder监听其他响应式变量
+### 9. ObsBuilder监听其他响应式变量
 
 ObsBuilder 也提供了 watch 选项，与 Obs 不同的是，它接收 Obs 数组，当监听的任意一个变量发生变化时，都会重新构建小部件
 
@@ -214,10 +284,10 @@ class Example extends StatelessWidget {
 }
 ```
 
-### 8. 响应式变量 - 对象
+### 10. 响应式变量 - 对象
 
 为什么修改 List、Map 等对象时不会触发自动刷新？因为 dart 只能通过 setter 方法拦截对象的更改，
-当你使用对象的api时，setter 方法无法拦截，自然无法触发自动刷新，这种情况下你有两个选择：
+如果你没有将整个对象进行赋值，那么 setter 方法无法拦截，自然无法触发自动刷新，这种情况下你有两个选择：
 
 1. 通过 .value 进行整个对象的修改
 2. 手动执行 notify 方法触发刷新
@@ -250,3 +320,8 @@ class Example extends StatelessWidget {
   }
 }
 ```
+
+以上就是 Obs、ObsBuilder 的全部内容了，它们的所有源码仅有200行左右，实际上，ObsBuilder自动搜集依赖实现，
+借鉴于[Getx](https://github.com/jonataslaw/getx)，如果你已经使用 Getx 作为状态管理解决方案，
+那么你不需要用到此库，因为此库无论是用法、还是实现，都与 Getx 相似，同时 Getx 提供了更多功能，属于一个完整的状态管理解决方案，
+唯一的缺点（对有些人来讲）可能就是功能太多了：router、http...

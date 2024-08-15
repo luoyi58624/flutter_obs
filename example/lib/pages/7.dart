@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_obs/flutter_obs.dart';
 
-class _Provider extends InheritedWidget {
-  const _Provider({
+class ProviderData extends InheritedWidget {
+  const ProviderData({
+    super.key,
     required super.child,
     required this.count,
   });
 
   final Obs count;
 
-  static _Provider of(BuildContext context) {
-    final _Provider? result =
-        context.dependOnInheritedWidgetOfExactType<_Provider>();
-    assert(result != null, 'No _Provider found in context');
-    return result!;
-  }
+  static ProviderData of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ProviderData>()!;
 
   @override
-  bool updateShouldNotify(_Provider oldWidget) => true;
+  bool updateShouldNotify(ProviderData oldWidget) => true;
 }
 
 class ProviderPage extends StatelessWidget {
@@ -31,7 +28,7 @@ class ProviderPage extends StatelessWidget {
         title: const Text('Provider注入状态'),
       ),
       body: Center(
-        child: _Provider(
+        child: ProviderData(
           count: count,
           child: SingleChildScrollView(
             child: Column(
@@ -61,7 +58,7 @@ class _Child extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = _Provider.of(context);
+    final data = ProviderData.of(context);
     return Column(
       children: [
         Padding(
@@ -81,7 +78,7 @@ class _Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data = _Provider.of(context);
+    final data = ProviderData.of(context);
     return ObsBuilder(builder: (context) {
       return ElevatedButton(
         onPressed: () {
