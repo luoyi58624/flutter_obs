@@ -286,10 +286,10 @@ class Example extends StatelessWidget {
 
 ### 10. 响应式变量 - 对象
 
-为什么修改 List、Map 等对象时不会触发自动刷新？因为 dart 只能通过 setter 方法拦截对象的更改，
-如果你没有将整个对象进行赋值，那么 setter 方法无法拦截，自然无法触发自动刷新，这种情况下你有两个选择：
+之所以修改 List、Map 等对象时不会触发自动刷新，是因为 dart 只能通过 setter 方法拦截对象的更改，
+如果你没有将整个对象进行赋值，那么 setter 方法无法拦截，所以自然无法触发自动刷新，这种情况下你有两个选择：
 
-1. 通过 .value 进行整个对象的修改
+1. 将整个对象进行赋值给 .value
 2. 手动执行 notify 方法触发刷新
 
 ```dart
@@ -304,6 +304,7 @@ class Example extends StatelessWidget {
     });
     return ElevatedButton(
       onPressed: () {
+        // 设置完整对象，List、DataModel 同理
         user.value = {
           ...user.value,
           'name': 'xx',
@@ -320,8 +321,3 @@ class Example extends StatelessWidget {
   }
 }
 ```
-
-以上就是 Obs、ObsBuilder 的全部内容了，它们的所有源码仅有200行左右，实际上，ObsBuilder自动搜集依赖实现，
-借鉴于[Getx](https://github.com/jonataslaw/getx)，如果你已经使用 Getx 作为状态管理解决方案，
-那么你不需要用到此库，因为此库无论是用法、还是实现，都与 Getx 相似，同时 Getx 提供了更多功能，属于一个完整的状态管理解决方案，
-唯一的缺点（对有些人来讲）可能就是功能太多了：router、http...

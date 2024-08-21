@@ -1,3 +1,7 @@
+## 1.4.5
+
+* chore: update docs
+
 ## 1.4.4
 
 * chore: update docs
