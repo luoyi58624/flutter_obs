@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_obs/flutter_obs.dart';
 
-void push(BuildContext context, Widget child) {
-  Navigator.of(context).push(
+Future<dynamic> push(BuildContext context, Widget child) {
+  return Navigator.of(context).push(
     MaterialPageRoute(builder: (context) => child),
   );
 }
@@ -43,7 +43,7 @@ class LocalStateWidget extends StatelessWidget {
         count.value++;
       },
       child: ObsBuilder(builder: (context) {
-        return Text('$name: ${count.value}');
+        return Text('$name: $count');
       }),
     );
   }

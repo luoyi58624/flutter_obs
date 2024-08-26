@@ -1,3 +1,9 @@
+## 1.5.0
+
+* feat: add test code
+* chore: update docs
+* chore: remove example
+
 ## 1.4.5
 
 * chore: update docs

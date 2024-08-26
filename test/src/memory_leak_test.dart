@@ -9,15 +9,19 @@ import 'common.dart';
 /// 它们不在考虑范围内，手动添加的副作用你必须自己手动处理。
 void memoryLeakTest() {
   testWidgets('内存泄漏测试1', (tester) async {
-    GlobalState state = GlobalState();
+    GlobalState state = GlobalState(false);
+    expect(state.count.value, 0);
+    expect(state.activeCountWatch, false);
     // 对于嵌套 ObsBuilder，更新内部响应式变量不会影响外部
     await tester.pumpWidget(_MainApp(
       state: state,
       child: const _NestBuilder(),
     ));
+    expect(state.activeCountWatch, false);
     expect(find.text('parentUpdateCount: 0'), findsOneWidget);
     await tester.tap(find.text('count1: 0'));
     await tester.pump();
+    expect(state.activeCountWatch, true);
     expect(find.text('parentUpdateCount: 0'), findsOneWidget);
     expect(state.count.notifyInstance.builderFunList.length, 1);
     // 移除、重新建立连接
@@ -26,27 +30,31 @@ void memoryLeakTest() {
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
     expect(find.text('parentUpdateCount: 2'), findsOneWidget);
-    // 点击count1，测试外部 ObsBuilder 构建情况
+    // 点击count1，发现外部 ObsBuilder 也会发生构建
     await tester.tap(find.text('count1: 1'));
     await tester.pump();
-    // 外部 ObsBuilder 发生构建，这是一个已知的bug，当内部的响应式构造器重新建立连接时，
-    // 外部监听器没有移除（待修复）
+    // 这是一个已知的bug，当内部的响应式构造器重新建立连接时，外部监听器没有移除，
+    // 所以执行内部点击时会造成外部 ObsBuilder 也发生重建，这种写法应当避免
     expect(find.text('parentUpdateCount: 3'), findsOneWidget);
     expect(state.count.notifyInstance.builderFunList.length, 2);
   });
 
   testWidgets('内存泄漏测试2', (tester) async {
     // 模拟反复销毁 count1-1 的 ObsBuilder，检测 count 依赖的构建函数集合是否正确
-    GlobalState state = GlobalState();
+    GlobalState state = GlobalState(true);
+    expect(state.count.value, 0);
+    // 监听函数已立即触发
+    expect(state.activeCountWatch, true);
     await tester.pumpWidget(_MainApp(
       state: state,
       child: const _StateTestWidget(),
     ));
-
+    expect(state.activeCountWatch, true);
     expect(state.count.notifyInstance.builderFunList.length, 2);
 
     await tester.tap(find.text('count1-1: 0'));
     await tester.pump();
+    expect(state.activeCountWatch, true);
     expect(find.text('count1-1: 1'), findsOneWidget);
     expect(find.text('count1-2: 1'), findsOneWidget);
     expect(find.text('count2: 0'), findsOneWidget);
@@ -73,12 +81,52 @@ void memoryLeakTest() {
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
     expect(state.count.notifyInstance.builderFunList.length, 1);
+
+    await tester.tap(find.text('child page'));
+    await tester.pumpAndSettle();
+    expect(state.count.notifyInstance.watchFunList.length, 2);
+    expect(state.count2.notifyInstance.builderFunList.length, 1001);
+    await tester.tap(find.text('reset count2'));
+    await tester.pumpAndSettle();
+    expect(find.text('child-count2: 0'), findsWidgets);
+    await tester.tap(find.text('back'));
+    await tester.pumpAndSettle();
+    expect(state.count2.notifyInstance.builderFunList.length, 1);
+    expect(state.count.notifyInstance.watchFunList.length, 1);
+
+    // 一旦此变量被销毁，则不可再使用
+    state.count2.dispose();
+    await tester.pumpAndSettle();
+    expect(find.text('count2: 0'), findsOneWidget);
+    // await tester.tap(find.text('count2: 0'));
+    // await tester.pumpAndSettle();
+    // expect(find.text('count2: 1'), findsOneWidget);
+
+    // 重新赋值，然后更新 switch 让页面刷新
+    state.count2 = Obs(10);
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+    expect(find.text('count2: 10'), findsOneWidget);
   });
 }
 
 class GlobalState {
-  final count = Obs(0);
-  final count2 = Obs(0);
+  bool activeCountWatch = false;
+
+  GlobalState(this.immediate);
+
+  /// 是否立即运行一次 count 监听函数，count 使用 late 修饰，
+  /// 想要生效必须先访问一次 count
+  final bool immediate;
+
+  late final count = Obs(
+    0,
+    immediate: immediate,
+    watch: (newValue, oldValue) {
+      activeCountWatch = true;
+    },
+  );
+  var count2 = Obs(0);
   final show = Obs(false);
 }
 
@@ -90,10 +138,10 @@ class _MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Material(
-        child: _StateProvider(
-          state,
+    return _StateProvider(
+      state,
+      child: MaterialApp(
+        home: Material(
           child: child,
         ),
       ),
@@ -136,7 +184,6 @@ class _NestBuilderState extends State<_NestBuilder> {
     final state = _StateProvider.of(context).state;
     return Column(
       children: [
-        // 模拟比较恶心的写法，虽然不实用，但实际业务可能会存在比这更隐蔽、复杂的使用
         ObsBuilder(builder: (context) {
           parentUpdateCount++;
           return Column(
@@ -152,6 +199,7 @@ class _NestBuilderState extends State<_NestBuilder> {
                 onPressed: () {
                   state.count.value++;
                 },
+                // 不要出现这种写法，这会导致 count 变量持续依赖外部 ObsBuilder
                 child: flag
                     ? ObsBuilder(builder: (context) {
                         return Text('count1: ${state.count.value}');
@@ -186,6 +234,7 @@ class _StateTestWidgetState extends State<_StateTestWidget> {
   @override
   Widget build(BuildContext context) {
     final state = _StateProvider.of(context).state;
+
     return Column(
       children: [
         Switch(
@@ -223,10 +272,11 @@ class _StateTestWidgetState extends State<_StateTestWidget> {
           );
         }),
         ElevatedButton(
-          onPressed: () {
-            push(context, const _ChildPage());
+          onPressed: () async {
+            await push(context, const _ChildPage());
+            // state.count2.dispose();
           },
-          child: const Text('子页面'),
+          child: const Text('child page'),
         ),
       ],
     );
@@ -241,12 +291,46 @@ class _ChildPage extends StatefulWidget {
 }
 
 class _ChildPageState extends State<_ChildPage> {
+  late GlobalState state;
+
+  @override
+  void dispose() {
+    super.dispose();
+    state.count.removeWatch(countWatch);
+  }
+
+  void countWatch(newValue, oldValue) {}
+
   @override
   Widget build(BuildContext context) {
-    final state = _StateProvider.of(context).state;
-    return Scaffold(
-      body: Column(
-        children: [],
+    state = _StateProvider.of(context).state;
+    // 会忽略重复添加的相同监听函数
+    state.count.addWatch(countWatch);
+    state.count.addWatch(countWatch);
+    return Material(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                state.count2.reset();
+              },
+              child: const Text('reset count2'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('back'),
+            ),
+            ...List.generate(
+              1000,
+              (index) => ObsBuilder(builder: (context) {
+                return Text('child-count2: ${state.count2.value}');
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
