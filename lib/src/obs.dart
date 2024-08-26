@@ -5,7 +5,7 @@ import 'private.dart';
 /// 响应式变量监听回调
 typedef ObsWatchCallback<T> = void Function(T newValue, T oldValue);
 
-/// [Obs] 继承自 [ValueNotifier]，所以支持多种使用方式：
+/// [Obs] 继承自 [ValueNotifier]，但核心实现完全不依赖 [ValueNotifier]，继承它是为了支持多种使用方式：
 ///
 /// ```dart
 /// const count = Obs(0);
@@ -59,8 +59,8 @@ class Obs<T> extends ValueNotifier<T> {
   T get value {
     if (tempUpdateFun != null) {
       final fun = tempUpdateFun!;
-      if (!notifyInstance.obsUpdateList.contains(fun)) {
-        notifyInstance.obsUpdateList.add(fun);
+      if (!notifyInstance.builderFunList.contains(fun)) {
+        notifyInstance.builderFunList.add(fun);
         tempNotifyList.add(notifyInstance);
       }
     }
@@ -77,7 +77,9 @@ class Obs<T> extends ValueNotifier<T> {
     }
   }
 
-  /// 通知 [ObsBuilder] 小部件更新实例，内部保存了刷新小部件函数集合、以及监听函数集合
+  /// 副作用通知实例对象，内部保存了刷新 ObsBuilder 小部件函数集合、以及 watch 监听函数集合。
+  ///
+  /// 此变量本来是内部私有的，但之所以公开是为了测试用例的执行，所以，在业务逻辑中请不要操作此对象。
   final NotifyInstance<T> notifyInstance = NotifyInstance<T>();
 
   /// [_value] 初始值，当执行 [reset] 重置方法时应用它
@@ -93,7 +95,7 @@ class Obs<T> extends ValueNotifier<T> {
   /// 通知所有依赖此响应式变量的小部件进行刷新，包括注册的监听函数
   void notify() {
     notifyListeners();
-    for (var fun in notifyInstance.obsUpdateList) {
+    for (var fun in notifyInstance.builderFunList) {
       fun();
     }
     _notifyWatchFun();
@@ -130,7 +132,7 @@ class Obs<T> extends ValueNotifier<T> {
   /// 释放所有监听器，一旦执行此变量将不可再次使用
   @override
   void dispose() {
-    notifyInstance.obsUpdateList.clear();
+    notifyInstance.builderFunList.clear();
     notifyInstance.watchFunList.clear();
     super.dispose();
   }

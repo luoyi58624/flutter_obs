@@ -5,7 +5,7 @@ import 'package:flutter_obs/flutter_obs.dart';
 
 import 'common.dart';
 
-void test1() {
+void simpleTest() {
   /// Obs可以当做局部变量使用
   testWidgets('局部状态测试', (tester) async {
     await tester.pumpWidget(const MaterialApp(
@@ -16,7 +16,6 @@ void test1() {
     await tester.pump();
     expect(find.text('count: 1'), findsOneWidget);
     await tester.tap(find.byType(GestureDetector));
-    await tester.pump();
     await tester.tap(find.byType(GestureDetector));
     await tester.pump();
     expect(find.text('count: 3'), findsOneWidget);
@@ -118,10 +117,10 @@ void test1() {
 
     await tester.tap(find.text('child page'));
     await tester.pumpAndSettle();
-    expect(count.notifyInstance.obsUpdateList.length, 1);
+    expect(count.notifyInstance.builderFunList.length, 1);
     await tester.tap(find.text('back'));
     await tester.pumpAndSettle();
-    expect(count.notifyInstance.obsUpdateList.length, 0);
+    expect(count.notifyInstance.builderFunList.length, 0);
   });
 }
 

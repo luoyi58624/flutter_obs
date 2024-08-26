@@ -68,7 +68,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
   @override
   void dispose() {
     for (var obs in _obsNotifyList) {
-      obs.obsUpdateList.remove(notifyInstance);
+      obs.builderFunList.remove(notifyInstance);
     }
     _obsNotifyList.clear();
     super.dispose();
@@ -76,8 +76,8 @@ class _ObsBuilderState extends State<ObsBuilder> {
 
   void _addWatch(List<Obs> watch) {
     for (final item in watch) {
-      if (!item.notifyInstance.obsUpdateList.contains(notifyInstance)) {
-        item.notifyInstance.obsUpdateList.add(notifyInstance);
+      if (!item.notifyInstance.builderFunList.contains(notifyInstance)) {
+        item.notifyInstance.builderFunList.add(notifyInstance);
         _obsNotifyList.add(item.notifyInstance);
       }
     }
@@ -85,7 +85,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
 
   void _removeWatch(List<Obs> watch) {
     for (final item in watch) {
-      item.notifyInstance.obsUpdateList.remove(notifyInstance);
+      item.notifyInstance.builderFunList.remove(notifyInstance);
       _obsNotifyList.remove(item.notifyInstance);
     }
   }

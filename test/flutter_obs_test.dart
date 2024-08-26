@@ -1,7 +1,9 @@
-import 'test1.dart';
-import 'test2.dart';
+import 'src/simple_test.dart';
+import 'src/memory_leak_test.dart';
+import 'src/watch_test.dart';
 
 void main() {
-  test1(); // 1. 简单状态测试
-  test2(); // 2. 局部变量简单测试
+  simpleTest(); // 简单状态测试
+  memoryLeakTest(); // 内存泄漏测试
+  watchTest(); // 副作用监听测试
 }
