@@ -1,4 +1,6 @@
-part of '../flutter_obs.dart';
+import 'package:flutter/foundation.dart';
+
+import 'private.dart';
 
 /// 响应式变量监听回调
 typedef ObsWatchCallback<T> = void Function(T newValue, T oldValue);
@@ -44,23 +46,10 @@ class Obs<T> extends ValueNotifier<T> {
     this._initialValue = _value;
     this.oldValue = _value;
     if (watch != null) {
-      _obs.watchFunList.add(watch);
+      notifyInstance.watchFunList.add(watch);
       if (immediate) _notifyWatchFun();
     }
   }
-
-  /// 通知 [ObsBuilder] 小部件更新实例
-  final _Obs<T> _obs = _Obs<T>();
-
-  /// [_value] 初始值，当执行 [reset] 重置方法时应用它
-  late T _initialValue;
-
-  /// 记录上一次 [_value] 值
-  late T oldValue;
-
-  /// 当通过 .value 更新时是否自动刷新小部件，如果你需要手动控制，请将其设置为 false，
-  /// 你既可以从构造函数中初始化它，也可以在任意代码中动态修改它
-  bool auto;
 
   /// 响应式变量的原始值
   T _value;
@@ -68,11 +57,11 @@ class Obs<T> extends ValueNotifier<T> {
   /// 当小部件被 [ObsBuilder] 包裹时，它会追踪内部的响应式变量
   @override
   T get value {
-    if (_tempUpdateFun != null) {
-      final fun = _tempUpdateFun!;
-      if (!_obs.obsUpdateList.contains(fun)) {
-        _obs.obsUpdateList.add(fun);
-        _tempObsList.add(_obs);
+    if (tempUpdateFun != null) {
+      final fun = tempUpdateFun!;
+      if (!notifyInstance.obsUpdateList.contains(fun)) {
+        notifyInstance.obsUpdateList.add(fun);
+        tempNotifyList.add(notifyInstance);
       }
     }
     return _value;
@@ -88,17 +77,30 @@ class Obs<T> extends ValueNotifier<T> {
     }
   }
 
+  /// 通知 [ObsBuilder] 小部件更新实例，内部保存了刷新小部件函数集合、以及监听函数集合
+  final NotifyInstance<T> notifyInstance = NotifyInstance<T>();
+
+  /// [_value] 初始值，当执行 [reset] 重置方法时应用它
+  late T _initialValue;
+
+  /// 记录上一次 [_value] 值
+  late T oldValue;
+
+  /// 当通过 .value 更新时是否自动刷新小部件，如果你需要手动控制，请将其设置为 false，
+  /// 你既可以从构造函数中初始化它，也可以在任意代码中动态修改它
+  bool auto;
+
   /// 通知所有依赖此响应式变量的小部件进行刷新，包括注册的监听函数
   void notify() {
     notifyListeners();
-    for (var fun in _obs.obsUpdateList) {
+    for (var fun in notifyInstance.obsUpdateList) {
       fun();
     }
     _notifyWatchFun();
   }
 
   void _notifyWatchFun() {
-    for (var fun in _obs.watchFunList) {
+    for (var fun in notifyInstance.watchFunList) {
       fun(this._value, this.oldValue);
     }
   }
@@ -115,21 +117,21 @@ class Obs<T> extends ValueNotifier<T> {
   /// 添加监听函数，提示：它和 [addListener] 本质上完全一样，
   /// 不过此回调可以接收 newValue、oldValue 两个参数
   void addWatch(ObsWatchCallback<T> fun) {
-    if (_obs.watchFunList.contains(fun) == false) {
-      _obs.watchFunList.add(fun);
+    if (notifyInstance.watchFunList.contains(fun) == false) {
+      notifyInstance.watchFunList.add(fun);
     }
   }
 
   /// 移除监听函数
   void removeWatch(ObsWatchCallback<T> fun) {
-    _obs.watchFunList.remove(fun);
+    notifyInstance.watchFunList.remove(fun);
   }
 
   /// 释放所有监听器，一旦执行此变量将不可再次使用
   @override
   void dispose() {
-    _obs.obsUpdateList.clear();
-    _obs.watchFunList.clear();
+    notifyInstance.obsUpdateList.clear();
+    notifyInstance.watchFunList.clear();
     super.dispose();
   }
 
@@ -138,19 +140,4 @@ class Obs<T> extends ValueNotifier<T> {
   String toString() {
     return value.toString();
   }
-}
-
-/// 临时 ObsBuilder 小部件重建函数
-VoidCallback? _tempUpdateFun;
-
-/// ObsBuilder 内部允许存在多个 Obs 变量，此集合就是在 build 过程中收集多个 Obs 实例
-Set<_Obs> _tempObsList = {};
-
-/// Obs、ObsBuilder 实例枢纽
-class _Obs<T> {
-  /// ObsBuilder 更新函数集合
-  final List<VoidCallback> obsUpdateList = [];
-
-  /// 用户手动添加的监听函数集合
-  final List<ObsWatchCallback<T>> watchFunList = [];
 }
