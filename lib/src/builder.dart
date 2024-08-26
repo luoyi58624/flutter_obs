@@ -11,7 +11,9 @@ class ObsBuilder extends StatefulWidget {
   /// 必须通过函数构建小部件，否则无法延迟拦截读取内部的响应式变量
   final WidgetBuilder builder;
 
-  /// 监听响应式变量，监听的任意一个变量发生更改都会刷新此小部件
+  /// 设置监听的响应式变量，监听的任意一个变量发生更改都会刷新此小部件，使用场景：
+  /// * ObsBuilder 依赖响应式变量触发变更，但 [builder] 函数中却不使用它
+  /// * ObsBuilder 内部的响应式变量被各种 [Builder] 又进行了一次转发，导致收集不到
   final List<Obs> watch;
 
   @override
@@ -22,7 +24,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 保存绑定的响应式变量集合，[Obs] 和 [ObsBuilder] 是多对多关系，
   /// [Obs] 保存的是多个 [ObsBuilder] 的刷新方法，而 [ObsBuilder] 可以引用多个 [Obs] 变量，
   /// 当组件被销毁时，需要通知所有引用此 [ObsBuilder] 的响应式变量移除它的刷新方法。
-  final Set<_Notify> dependNotifyList = {};
+  final Set<_Obs> _obsList = {};
 
   /// 是否更新了 watch 依赖
   bool isUpdateWatch = false;
@@ -62,46 +64,46 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 小部件被销毁时移除副作用
   @override
   void dispose() {
-    for (var notify in dependNotifyList) {
-      notify.list.remove(_notify);
+    for (var obs in _obsList) {
+      obs.obsUpdateList.remove(_notify);
     }
-    dependNotifyList.clear();
+    _obsList.clear();
     super.dispose();
   }
 
   void _addWatch(List<Obs> watch) {
-    for (final obs in watch) {
-      if (!obs._notify.list.contains(_notify)) {
-        obs._notify.list.add(_notify);
-        dependNotifyList.add(obs._notify);
+    for (final item in watch) {
+      if (!item._obs.obsUpdateList.contains(_notify)) {
+        item._obs.obsUpdateList.add(_notify);
+        _obsList.add(item._obs);
       }
     }
   }
 
   void _removeWatch(List<Obs> watch) {
-    for (final obs in watch) {
-      obs._notify.list.remove(_notify);
-      dependNotifyList.remove(obs._notify);
+    for (final item in watch) {
+      item._obs.obsUpdateList.remove(_notify);
+      _obsList.remove(item._obs);
     }
   }
 
   /// 响应式变量发生变更就是执行此函数通知页面刷新
   void _notify() {
-    if (mounted) setState(() {});
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     // 1.设置刷新页面函数到临时变量
-    _notifyFun = _notify;
+    _tempUpdateFun = _notify;
     // 2.构建页面，触发响应式变量的 getter 方法，将 _notify 函数添加到监听器中
     var result = widget.builder(context);
     // 3.销毁临时变量
-    _notifyFun = null;
+    _tempUpdateFun = null;
     // 4.在构建器中保存依赖的响应式变量集合
-    dependNotifyList.addAll(_dependNotifyList);
+    _obsList.addAll(_tempObsList);
     // 5.销毁依赖的响应式变量集合
-    _dependNotifyList.clear();
+    _tempObsList.clear();
     // 6.如果设置了watch，则需要将监听的响应式变量添加到集合中
     if (widget.watch.isNotEmpty) {
       // 7.排除更新 watch 依赖，didUpdateWidget生命周期中已处理
