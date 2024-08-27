@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_obs/src/obs.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter_obs/flutter_obs.dart';
-
 import 'common.dart';
 
 void simpleTest() {

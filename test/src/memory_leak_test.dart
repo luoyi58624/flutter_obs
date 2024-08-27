@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_obs/flutter_obs.dart';
 import 'package:flutter_obs/src/obs.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -34,6 +33,8 @@ void memoryLeakTest() {
     await tester.pump();
     // 这是一个已知的bug，当内部的响应式构造器重新建立连接时，外部监听器没有移除，
     // 所以执行内部点击时会造成外部 ObsBuilder 也发生重建，这种写法应当避免
+    // expect(find.text('parentUpdateCount: 2'), findsOneWidget);
+    // expect(ObsTest.getBuilderFunLength(state.count), 1);
     expect(find.text('parentUpdateCount: 3'), findsOneWidget);
     expect(ObsTest.getBuilderFunLength(state.count), 2);
   });

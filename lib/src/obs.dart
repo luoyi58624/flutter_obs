@@ -20,7 +20,7 @@ class _Notify<T> {
   final List<ObsWatchCallback<T>> watchFunList = [];
 }
 
-/// [Obs] 继承自 [ValueNotifier]，但核心实现完全不依赖 [ValueNotifier]，继承它是为了支持多种使用方式：
+/// [Obs] 继承自 [ValueNotifier]，所以支持多种使用方式：
 ///
 /// ```dart
 /// const count = Obs(0);
@@ -49,21 +49,18 @@ class Obs<T> extends ValueNotifier<T> {
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
   Obs(
-    this._value, {
+    super.value, {
     this.auto = true,
     ObsWatchCallback<T>? watch,
     bool immediate = false,
-  }) : super(_value) {
-    this._initialValue = _value;
-    this.oldValue = _value;
+  }) {
+    this._initialValue = super.value;
+    this.oldValue = super.value;
     if (watch != null) {
       _notify.watchFunList.add(watch);
       if (immediate) _notifyWatchFun();
     }
   }
-
-  /// 响应式变量的原始值
-  T _value;
 
   /// 当小部件被 [ObsBuilder] 包裹时，它会追踪内部的响应式变量
   @override
@@ -75,15 +72,15 @@ class Obs<T> extends ValueNotifier<T> {
         _notifyList.add(_notify);
       }
     }
-    return _value;
+    return super.value;
   }
 
   /// 拦截 setter 方法更新变量通知所有小部件更新
   @override
   set value(T newValue) {
-    if (_value != newValue) {
-      oldValue = _value;
-      _value = newValue;
+    if (super.value != newValue) {
+      oldValue = super.value;
+      super.value = newValue;
       if (auto) notify();
     }
   }
@@ -112,13 +109,13 @@ class Obs<T> extends ValueNotifier<T> {
 
   void _notifyWatchFun() {
     for (var fun in _notify.watchFunList) {
-      fun(this._value, this.oldValue);
+      fun(super.value, this.oldValue);
     }
   }
 
   /// 重置响应式变量到初始状态，你可以在任意位置执行它
   void reset() {
-    _value = _initialValue;
+    super.value = _initialValue;
     // 在 dispose 生命周期中执行重置，如果不加延迟会导致 setState 异常
     Future.delayed(const Duration(milliseconds: 1), () {
       notify();
