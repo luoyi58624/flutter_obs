@@ -27,19 +27,19 @@ class _Notify<T> {
 ///
 /// ObsBuilder(
 ///   builder: (context){
-///     return Text(count.value);
+///     return Text('${count.value}');
 ///   },
 /// ),
 /// ListenableBuilder(
 ///   listenable: count,
 ///   builder: (context, child){
-///     return Text(count.value);
+///     return Text('${count.value}');
 ///   },
 /// ),
 /// ValueListenableBuilder(
 ///   valueListenable: count,
 ///   builder: (context, value, child){
-///     return Text(value);
+///     return Text('$value');
 ///   },
 /// ),
 /// ```

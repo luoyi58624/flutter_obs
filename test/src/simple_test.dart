@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'common.dart';
 
 void simpleTest() {
-  /// Obs可以当做局部变量使用
   testWidgets('局部状态测试', (tester) async {
     await tester.pumpWidget(const MaterialApp(
       home: LocalStateWidget('count'),
@@ -24,6 +23,42 @@ void simpleTest() {
       home: LocalStateWidget('count'),
     ));
     expect(find.text('count: 0'), findsOneWidget);
+  });
+
+  testWidgets('测试 ListenableBuilder、ValueListenableBuilder', (tester) async {
+    final count = Obs(0);
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (context) {
+        return Column(
+          children: [
+            ObsBuilder(
+              builder: (context) {
+                return Text('ObsBuilder: $count');
+              },
+            ),
+            ListenableBuilder(
+              listenable: count,
+              builder: (context, child) {
+                return Text('ListenableBuilder: $count');
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: count,
+              builder: (context, value, child) {
+                return Text('ValueListenableBuilder: $value');
+              },
+            ),
+          ],
+        );
+      }),
+    ));
+
+    count.value = 100;
+
+    await tester.pump();
+    expect(find.text('ObsBuilder: 100'), findsOneWidget);
+    expect(find.text('ListenableBuilder: 100'), findsOneWidget);
+    expect(find.text('ListenableBuilder: 100'), findsOneWidget);
   });
 
   /// 当父组件发生变更时，局部状态会被重置，但如果使用 const 修饰，则依旧可以保持状态
