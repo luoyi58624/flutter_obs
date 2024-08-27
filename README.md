@@ -324,14 +324,7 @@ class Example extends StatelessWidget {
 
 ### 11. 注意事项
 
-编写业务逻辑时需要注意下面这种情况，如果响应式变量通过条件动态变更重建范围，
-外层 ObsBuilder 的刷新函数不会清除，原理很简单，当内部 ObsBuilder 销毁后，
-响应式变量就自然跟外部 ObsBuilder 建立关联，当你重新构建内部 ObsBuilder 时，
-外部的 ObsBuilder 没有销毁自然它的刷新方法也不会被清除。
-
-修复这种 bug 十分棘手，但好在它的危害性并不大，最多就是 ObsBuilder 重建范围变大，
-同时执行了内外 2 次构建，但放心，Flutter的刷新原理会让页面只构建一次，这里不多细说，
-无论如何，你应当尽量避免这种不合理的写法，修复它会增加代码的复杂性，但带来的好处并不明显。
+这种写法要尽量避免，它虽然不会引起泄漏，但会让 ObsBuilder 重建范围变大
 
 ```dart
 class Example extends StatefulWidget {

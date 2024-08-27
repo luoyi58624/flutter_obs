@@ -1,3 +1,7 @@
+## 1.5.1
+
+* feat: 100% test coverage
+
 ## 1.5.0
 
 * feat: add test code

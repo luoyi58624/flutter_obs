@@ -8,12 +8,12 @@ class ObsBuilder extends StatefulWidget {
     this.watch = const [],
   });
 
-  /// 必须通过函数构建小部件，否则无法延迟拦截读取内部的响应式变量
+  /// 通过函数构建小部件，它会自动收集内部的响应式变量，你也可以手动指定：[watch]
   final WidgetBuilder builder;
 
   /// 设置监听的响应式变量，监听的任意一个变量发生更改都会刷新此小部件，使用场景：
   /// * ObsBuilder 依赖响应式变量触发变更，但 [builder] 函数中却不使用它
-  /// * ObsBuilder 内部的响应式变量被各种 [Builder] 又进行了一次转发，导致收集不到
+  /// * ObsBuilder 内部依赖的响应式变量被各种 [Builder] 又进行了一次转发，导致自动收集不到
   final List<Obs> watch;
 
   @override
@@ -26,15 +26,15 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 当组件被销毁时，需要通知所有引用此 [ObsBuilder] 的响应式变量移除它的刷新方法。
   final Set<_Notify> _obsNotifyList = {};
 
-  /// 是否更新了 watch 依赖
-  bool isUpdateWatch = false;
+  /// 是否更新了 watch 依赖，此变量用于区分首次绑定的 watch
+  bool _isUpdateWatch = false;
 
   /// 当更新了 watch 依赖，需要进行添加或移除绑定的响应式变量
   @override
   void didUpdateWidget(covariant ObsBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.watch != oldWidget.watch) {
-      isUpdateWatch = true;
+      _isUpdateWatch = true;
       if (oldWidget.watch.isEmpty) {
         _addWatch(widget.watch);
       } else if (widget.watch.isEmpty) {
@@ -107,8 +107,8 @@ class _ObsBuilderState extends State<ObsBuilder> {
     // 6.如果设置了watch，则需要将监听的响应式变量添加到集合中
     if (widget.watch.isNotEmpty) {
       // 7.排除更新 watch 依赖，didUpdateWidget生命周期中已处理
-      if (isUpdateWatch) {
-        isUpdateWatch = false;
+      if (_isUpdateWatch) {
+        _isUpdateWatch = false;
       }
       // 8.添加监听依赖，如果已添加会自动跳过
       else {
