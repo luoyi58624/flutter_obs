@@ -129,7 +129,14 @@ class Obs<T> extends ValueNotifier<T> {
     notifyInstance.watchFunList.remove(fun);
   }
 
-  /// 释放所有监听器，一旦执行此变量将不可再次使用
+  /// 释放所有监听器，一旦执行此变量将不可再次使用，不可使用的限制是来源于 [ChangeNotifier]。
+  ///
+  /// 在正常情况下，你并不需要手动调用这个函数，对于自动收集的刷新小部件依赖，小部件被卸载时会自动移除，
+  /// 而用户唯一需要考虑的则是手动添加的副作用：
+  /// * addListener -> removeListener
+  /// * addWatch -> removeWatch
+  ///
+  /// 当然，如果绑定了太多监听函数，你可以直接调用 dispose 一劳永逸地全部清除。
   @override
   void dispose() {
     notifyInstance.builderFunList.clear();

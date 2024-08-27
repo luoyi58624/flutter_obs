@@ -4,9 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'common.dart';
 
-/// 模拟复杂的应用场景，检测是否存在内存泄漏，检测是否泄漏的核心点就是判断 ObsBuilder
-/// 刷新方法集合是否被正确移除，对于继承的 [ValueNotifier]、以及用户手动添加的 watchFunList，
-/// 它们不在考虑范围内，手动添加的副作用你必须自己手动处理。
+/// 模拟复杂的应用场景，检测是否存在内存泄漏，检测是否泄漏的核心点就是判断 ObsBuilder 刷新方法集合是否被正确移除
 void memoryLeakTest() {
   testWidgets('内存泄漏测试1', (tester) async {
     GlobalState state = GlobalState(false);
@@ -40,18 +38,20 @@ void memoryLeakTest() {
   });
 
   testWidgets('内存泄漏测试2', (tester) async {
-    // 模拟反复销毁 count1-1 的 ObsBuilder，检测 count 依赖的构建函数集合是否正确
+    // 模拟监听函数需要立即触发
     GlobalState state = GlobalState(true);
+    // count使用了 late 修饰，所以判断监听函数是否触发前需要先使用它，这里只是做了判断，并未做修改
     expect(state.count.value, 0);
-    // 监听函数已立即触发
+    // 监听函数已立即触发，它修改了 activeCountWatch 变量
     expect(state.activeCountWatch, true);
+
     await tester.pumpWidget(_MainApp(
       state: state,
       child: const _StateTestWidget(),
     ));
-    expect(state.activeCountWatch, true);
-    expect(state.count.notifyInstance.builderFunList.length, 2);
 
+    // 模拟反复销毁 count1-1 的 ObsBuilder，检测 count 依赖的构建函数集合是否正确
+    expect(state.count.notifyInstance.builderFunList.length, 2);
     await tester.tap(find.text('count1-1: 0'));
     await tester.pump();
     expect(state.activeCountWatch, true);
@@ -82,19 +82,22 @@ void memoryLeakTest() {
     await tester.pumpAndSettle();
     expect(state.count.notifyInstance.builderFunList.length, 1);
 
+    // 进入子页面会绑定1000个响应式构建器，所以 Obs 注册的依赖长度要为1001
     await tester.tap(find.text('child page'));
     await tester.pumpAndSettle();
     expect(state.count.notifyInstance.watchFunList.length, 2);
     expect(state.count2.notifyInstance.builderFunList.length, 1001);
+    // 重置响应式变量，count2预期值要为0
     await tester.tap(find.text('reset count2'));
     await tester.pumpAndSettle();
     expect(find.text('child-count2: 0'), findsWidgets);
+    // 返回页面，需要自动销毁1000个依赖，count2的依赖预期值要为1
     await tester.tap(find.text('back'));
     await tester.pumpAndSettle();
     expect(state.count2.notifyInstance.builderFunList.length, 1);
     expect(state.count.notifyInstance.watchFunList.length, 1);
 
-    // 一旦此变量被销毁，则不可再使用
+    // 一旦此变量被销毁，则不可再使用，这是 ChangeNotifier 的机制，所以下方代码需要注释掉
     state.count2.dispose();
     await tester.pumpAndSettle();
     expect(find.text('count2: 0'), findsOneWidget);
@@ -102,11 +105,13 @@ void memoryLeakTest() {
     // await tester.pumpAndSettle();
     // expect(find.text('count2: 1'), findsOneWidget);
 
-    // 重新赋值，然后更新 switch 让页面刷新
+    // 被销毁的变量可以重新赋值，然后继续使用
     state.count2 = Obs(10);
-    await tester.tap(find.byType(Switch));
+    await tester.tap(find.byType(Switch)); // 更新 switch 让页面刷新
     await tester.pumpAndSettle();
-    expect(find.text('count2: 10'), findsOneWidget);
+    await tester.tap(find.text('count2: 10'));
+    await tester.pumpAndSettle();
+    expect(find.text('count2: 11'), findsOneWidget);
   });
 }
 

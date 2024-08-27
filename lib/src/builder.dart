@@ -32,7 +32,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 是否更新了 watch 依赖
   bool isUpdateWatch = false;
 
-  /// 开发环境下若更改了watch，需要进行添加或移除绑定的响应式变量
+  /// 当更新了 watch 依赖，需要进行添加或移除绑定的响应式变量
   @override
   void didUpdateWidget(covariant ObsBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
