@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 Key switch1 = const Key('switch1');
 Key switch2 = const Key('switch2');
 
-/// 监听副作用测试
+/// ObsBuilder watch 测试
 void watchTest() {
   testWidgets('内存泄漏测试2', (tester) async {
     await tester.pumpWidget(const _Test1());
@@ -20,7 +20,7 @@ void watchTest() {
     await tester.tap(find.text('count1++'));
     await tester.pump();
     expect(find.text('buildCount: 1'), findsOneWidget);
-    await tester.tap(find.text('count2++')); // count2++无变化
+    await tester.tap(find.text('count2++')); // 只监听了count1，所以count2++无变化
     await tester.pump();
     expect(find.text('buildCount: 1'), findsOneWidget);
 

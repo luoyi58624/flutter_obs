@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_obs/flutter_obs.dart';
+import 'package:flutter_obs/src/obs.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'common.dart';
@@ -21,7 +22,7 @@ void memoryLeakTest() {
     await tester.pump();
     expect(state.activeCountWatch, true);
     expect(find.text('parentUpdateCount: 0'), findsOneWidget);
-    expect(state.count.notifyInstance.builderFunList.length, 1);
+    expect(ObsTest.getBuilderFunLength(state.count), 1);
     // 移除、重新建立连接
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
@@ -34,7 +35,7 @@ void memoryLeakTest() {
     // 这是一个已知的bug，当内部的响应式构造器重新建立连接时，外部监听器没有移除，
     // 所以执行内部点击时会造成外部 ObsBuilder 也发生重建，这种写法应当避免
     expect(find.text('parentUpdateCount: 3'), findsOneWidget);
-    expect(state.count.notifyInstance.builderFunList.length, 2);
+    expect(ObsTest.getBuilderFunLength(state.count), 2);
   });
 
   testWidgets('内存泄漏测试2', (tester) async {
@@ -51,7 +52,7 @@ void memoryLeakTest() {
     ));
 
     // 模拟反复销毁 count1-1 的 ObsBuilder，检测 count 依赖的构建函数集合是否正确
-    expect(state.count.notifyInstance.builderFunList.length, 2);
+    expect(ObsTest.getBuilderFunLength(state.count), 2);
     await tester.tap(find.text('count1-1: 0'));
     await tester.pump();
     expect(state.activeCountWatch, true);
@@ -61,7 +62,7 @@ void memoryLeakTest() {
 
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
-    expect(state.count.notifyInstance.builderFunList.length, 1);
+    expect(ObsTest.getBuilderFunLength(state.count), 1);
 
     await tester.tap(find.text('count2: 0'));
     await tester.pump();
@@ -70,7 +71,7 @@ void memoryLeakTest() {
 
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
-    expect(state.count.notifyInstance.builderFunList.length, 2);
+    expect(ObsTest.getBuilderFunLength(state.count), 2);
 
     await tester.tap(find.text('count1-1: 1'));
     await tester.pump();
@@ -80,13 +81,13 @@ void memoryLeakTest() {
 
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
-    expect(state.count.notifyInstance.builderFunList.length, 1);
+    expect(ObsTest.getBuilderFunLength(state.count), 1);
 
     // 进入子页面会绑定1000个响应式构建器，所以 Obs 注册的依赖长度要为1001
     await tester.tap(find.text('child page'));
     await tester.pumpAndSettle();
-    expect(state.count.notifyInstance.watchFunList.length, 2);
-    expect(state.count2.notifyInstance.builderFunList.length, 1001);
+    expect(ObsTest.getWatchFunLength(state.count), 2);
+    expect(ObsTest.getBuilderFunLength(state.count2), 1001);
     // 重置响应式变量，count2预期值要为0
     await tester.tap(find.text('reset count2'));
     await tester.pumpAndSettle();
@@ -94,8 +95,8 @@ void memoryLeakTest() {
     // 返回页面，需要自动销毁1000个依赖，count2的依赖预期值要为1
     await tester.tap(find.text('back'));
     await tester.pumpAndSettle();
-    expect(state.count2.notifyInstance.builderFunList.length, 1);
-    expect(state.count.notifyInstance.watchFunList.length, 1);
+    expect(ObsTest.getWatchFunLength(state.count), 1);
+    expect(ObsTest.getBuilderFunLength(state.count2), 1);
 
     // 一旦此变量被销毁，则不可再使用，这是 ChangeNotifier 的机制，所以下方代码需要注释掉
     state.count2.dispose();

@@ -1,9 +1,24 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
-import 'private.dart';
+part 'builder.dart';
 
 /// 响应式变量监听回调
 typedef ObsWatchCallback<T> = void Function(T newValue, T oldValue);
+
+/// 临时 ObsBuilder 小部件重建函数
+VoidCallback? _updateBuilderFun;
+
+/// ObsBuilder 内部允许存在多个 Obs 变量，此集合就是在 build 过程中收集多个 Obs 实例
+Set<_Notify> _notifyList = {};
+
+/// Obs、ObsBuilder 二者之间的枢纽
+class _Notify<T> {
+  /// ObsBuilder 更新函数集合
+  final List<VoidCallback> builderFunList = [];
+
+  /// 用户手动添加的监听函数集合
+  final List<ObsWatchCallback<T>> watchFunList = [];
+}
 
 /// [Obs] 继承自 [ValueNotifier]，但核心实现完全不依赖 [ValueNotifier]，继承它是为了支持多种使用方式：
 ///
@@ -28,10 +43,6 @@ typedef ObsWatchCallback<T> = void Function(T newValue, T oldValue);
 ///   },
 /// ),
 /// ```
-///
-/// 提示：当你将 [Obs] 作为局部状态时，正常情况下你不需要执行 dispose 方法进行销毁，
-/// 执行 dispose 只是清空 [ChangeNotifier] 中 List 数组，无论是使用 [ObsBuilder]，
-/// 还是 [ValueListenableBuilder]，当这些小部件被卸载时都会自动移除监听方法。
 class Obs<T> extends ValueNotifier<T> {
   /// 创建一个响应式变量，[ObsBuilder] 会收集内部所有响应式变量，当发生变更时会自动重建小部件。
   /// * auto 当响应式变量发生变化时，是否自动触发所有注册的通知函数，默认true
@@ -46,7 +57,7 @@ class Obs<T> extends ValueNotifier<T> {
     this._initialValue = _value;
     this.oldValue = _value;
     if (watch != null) {
-      notifyInstance.watchFunList.add(watch);
+      _notify.watchFunList.add(watch);
       if (immediate) _notifyWatchFun();
     }
   }
@@ -57,11 +68,11 @@ class Obs<T> extends ValueNotifier<T> {
   /// 当小部件被 [ObsBuilder] 包裹时，它会追踪内部的响应式变量
   @override
   T get value {
-    if (tempUpdateFun != null) {
-      final fun = tempUpdateFun!;
-      if (!notifyInstance.builderFunList.contains(fun)) {
-        notifyInstance.builderFunList.add(fun);
-        tempNotifyList.add(notifyInstance);
+    if (_updateBuilderFun != null) {
+      final fun = _updateBuilderFun!;
+      if (!_notify.builderFunList.contains(fun)) {
+        _notify.builderFunList.add(fun);
+        _notifyList.add(_notify);
       }
     }
     return _value;
@@ -77,10 +88,8 @@ class Obs<T> extends ValueNotifier<T> {
     }
   }
 
-  /// 副作用通知实例对象，内部保存了刷新 ObsBuilder 小部件函数集合、以及 watch 监听函数集合。
-  ///
-  /// 此变量本来是内部私有的，但之所以公开是为了测试用例的执行，所以，在业务逻辑中请不要操作此对象。
-  final NotifyInstance<T> notifyInstance = NotifyInstance<T>();
+  /// 副作用通知实例对象，内部保存了刷新 ObsBuilder 小部件函数集合、以及 watch 监听函数集合
+  final _Notify<T> _notify = _Notify<T>();
 
   /// [_value] 初始值，当执行 [reset] 重置方法时应用它
   late T _initialValue;
@@ -95,14 +104,14 @@ class Obs<T> extends ValueNotifier<T> {
   /// 通知所有依赖此响应式变量的小部件进行刷新，包括注册的监听函数
   void notify() {
     notifyListeners();
-    for (var fun in notifyInstance.builderFunList) {
+    for (var fun in _notify.builderFunList) {
       fun();
     }
     _notifyWatchFun();
   }
 
   void _notifyWatchFun() {
-    for (var fun in notifyInstance.watchFunList) {
+    for (var fun in _notify.watchFunList) {
       fun(this._value, this.oldValue);
     }
   }
@@ -116,17 +125,16 @@ class Obs<T> extends ValueNotifier<T> {
     });
   }
 
-  /// 添加监听函数，提示：它和 [addListener] 本质上完全一样，
-  /// 不过此回调可以接收 newValue、oldValue 两个参数
+  /// 添加监听函数，接收 newValue、oldValue 两个参数
   void addWatch(ObsWatchCallback<T> fun) {
-    if (notifyInstance.watchFunList.contains(fun) == false) {
-      notifyInstance.watchFunList.add(fun);
+    if (_notify.watchFunList.contains(fun) == false) {
+      _notify.watchFunList.add(fun);
     }
   }
 
   /// 移除监听函数
   void removeWatch(ObsWatchCallback<T> fun) {
-    notifyInstance.watchFunList.remove(fun);
+    _notify.watchFunList.remove(fun);
   }
 
   /// 释放所有监听器，一旦执行此变量将不可再次使用，不可使用的限制是来源于 [ChangeNotifier]。
@@ -136,11 +144,11 @@ class Obs<T> extends ValueNotifier<T> {
   /// * addListener -> removeListener
   /// * addWatch -> removeWatch
   ///
-  /// 当然，如果绑定了太多监听函数，你可以直接调用 dispose 一劳永逸地全部清除。
+  /// 如果不想手动移除监听，同时确定不再使用这个响应式变量，你可以调用 dispose 清除全部副作用函数。
   @override
   void dispose() {
-    notifyInstance.builderFunList.clear();
-    notifyInstance.watchFunList.clear();
+    _notify.builderFunList.clear();
+    _notify.watchFunList.clear();
     super.dispose();
   }
 
@@ -148,5 +156,16 @@ class Obs<T> extends ValueNotifier<T> {
   @override
   String toString() {
     return value.toString();
+  }
+}
+
+/// 响应式变量测试工具类
+class ObsTest {
+  static int getBuilderFunLength<T>(Obs<T> obs) {
+    return obs._notify.builderFunList.length;
+  }
+
+  static int getWatchFunLength<T>(Obs<T> obs) {
+    return obs._notify.watchFunList.length;
   }
 }
