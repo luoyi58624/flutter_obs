@@ -3,26 +3,23 @@ import 'package:flutter/widgets.dart';
 part 'builder.dart';
 
 /// 响应式变量监听回调，接收 newValue、oldValue 参数
-typedef ObsWatchCallback<T> = void Function(T newValue, T oldValue);
+typedef WatchCallback<T> = void Function(T newValue, T oldValue);
 
-/// 响应式变量通知模式，多种模式触发优先级：all > none > obs、watch、isolateWatch、listenable
+/// 响应式变量通知模式
 enum ObsNotifyMode {
   /// 触发所有通知
   all,
 
-  /// 不触发任何通知
-  none,
-
-  /// 仅触发 [ObsBuilder] 自动重建
+  /// 触发 [ObsBuilder] 自动重建
   obs,
 
-  /// 仅触发 watch 所有监听函数
+  /// 触发构造方法绑定的 watch 监听函数
   watch,
 
-  /// 仅触发被隔离的 watch 监听函数
-  isolateWatch,
+  /// 触发通过 addWatch 添加的所有监听函数
+  watchList,
 
-  /// 仅触发 [ChangeNotifier] 中的所有监听函数
+  /// 触发 [ChangeNotifier] 中的所有监听函数
   listeners,
 }
 
@@ -51,31 +48,19 @@ enum ObsNotifyMode {
 /// ```
 class Obs<T> extends ValueNotifier<T> {
   /// 创建一个响应式变量，[ObsBuilder] 会收集内部所有响应式变量，当发生变更时会自动重建小部件。
-  /// * auto 当响应式变量发生变化时，是否自动触发所有注册的通知函数，默认true
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
-  /// * isolate 构造函数绑定的监听函数是否与普通监听函数隔离，默认false，若为true，它将不会放置在数组中
+  /// * isolate
   Obs(
     super.value, {
     this.notifyMode = const [ObsNotifyMode.all],
-    ObsWatchCallback<T>? watch,
+    WatchCallback<T>? watch,
     bool immediate = false,
-    bool isolate = false,
   }) {
     this._initialValue = super.value;
     this.oldValue = super.value;
-    if (watch != null) {
-      if (isolate) {
-        this._notify = _Notify<T>(watch);
-        if (immediate) notifyIsolateWatch();
-      } else {
-        this._notify = _Notify<T>(null);
-        _notify.watchFunList.add(watch);
-        if (immediate) notifyWatch();
-      }
-    } else {
-      this._notify = _Notify<T>(null);
-    }
+    this._watchFun = watch;
+    if (immediate) notifyWatch();
   }
 
   /// 当小部件被 [ObsBuilder] 包裹时，它会追踪内部的响应式变量
@@ -97,25 +82,25 @@ class Obs<T> extends ValueNotifier<T> {
     if (super.value != newValue) {
       oldValue = super.value;
       super.value = newValue;
-      if (notifyMode.contains(ObsNotifyMode.all)) {
-        notify();
-      } else if (notifyMode.contains(ObsNotifyMode.none)) {
-        return;
-      } else {
-        if (notifyMode.contains(ObsNotifyMode.obs)) notifyObsBuilder();
-        if (notifyMode.contains(ObsNotifyMode.watch)) notifyWatch();
-        if (notifyMode.contains(ObsNotifyMode.isolateWatch)) {
-          notifyIsolateWatch();
-        }
-        if (notifyMode.contains(ObsNotifyMode.listeners)) {
-          notifyListeners();
+      if (notifyMode.isNotEmpty) {
+        if (notifyMode.contains(ObsNotifyMode.all)) {
+          notify();
+        } else {
+          if (notifyMode.contains(ObsNotifyMode.obs)) notifyObsBuilder();
+          if (notifyMode.contains(ObsNotifyMode.watch)) notifyWatch();
+          if (notifyMode.contains(ObsNotifyMode.watchList)) {
+            notifyWatchList();
+          }
+          if (notifyMode.contains(ObsNotifyMode.listeners)) {
+            notifyListeners();
+          }
         }
       }
     }
   }
 
   /// 副作用通知实例对象，内部保存了刷新 ObsBuilder 小部件函数集合、以及 watch 监听函数集合
-  late final _Notify<T> _notify;
+  final _Notify<T> _notify = _Notify<T>();
 
   /// [_value] 初始值，当执行 [reset] 重置方法时应用它
   late T _initialValue;
@@ -124,21 +109,11 @@ class Obs<T> extends ValueNotifier<T> {
   late T oldValue;
 
   /// 当响应式变量 setter 方法成功拦截时应用的通知模式，它接收一个数组，默认 [ObsNotifyMode.all]，
-  /// 意味着变量发生更改时通知所有注册的监听函数执行，如果你想手动控制 UI 更改或精确化触发监听函数，
-  /// 只需调整数组中的参数即可，你既可以从构造函数中初始化它，也可以在任意代码中动态修改它。
-  ///
-  /// 例如只监听 watch、 ChangeNotifier 注册的副作用函数：
-  /// ```
-  /// obs.notifyMode = [ ObsNotifyMode.watch, ObsNotifyMode.listeners ];
-  /// ```
-  ///
-  /// 或者只想手动刷新界面：
-  /// ```
-  /// obs.notifyMode = [ ObsNotifyMode.none ];
-  /// obs.notify(); // 通知所有副作用函数
-  /// obs.notifyObsBuilder(); // 只通知 ObsBuilder 刷新
-  /// ```
+  /// 如果是空数组，那么修改响应式变量将不会触发任何通知。
   List<ObsNotifyMode> notifyMode;
+
+  /// 构造方法添加的监听函数
+  late final WatchCallback<T>? _watchFun;
 
   /// 重置响应式变量到初始状态
   void reset() {
@@ -150,14 +125,14 @@ class Obs<T> extends ValueNotifier<T> {
   }
 
   /// 添加监听函数，接收 newValue、oldValue 两个参数
-  void addWatch(ObsWatchCallback<T> fun) {
+  void addWatch(WatchCallback<T> fun) {
     if (_notify.watchFunList.contains(fun) == false) {
       _notify.watchFunList.add(fun);
     }
   }
 
   /// 移除监听函数
-  void removeWatch(ObsWatchCallback<T> fun) {
+  void removeWatch(WatchCallback<T> fun) {
     _notify.watchFunList.remove(fun);
   }
 
@@ -165,28 +140,26 @@ class Obs<T> extends ValueNotifier<T> {
   void notify() {
     notifyObsBuilder();
     notifyWatch();
-    notifyIsolateWatch();
+    notifyWatchList();
     notifyListeners();
   }
 
-  /// 通知所有 [ObsBuilder] 刷新
+  /// 触发所有 [ObsBuilder] 小部件刷新
   notifyObsBuilder() {
     for (var fun in _notify.builderFunList) {
       fun();
     }
   }
 
-  /// 通知所有 watch 监听函数执行
+  /// 执行通过构造方法添加的监听函数
   notifyWatch() {
-    for (var fun in _notify.watchFunList) {
-      fun(super.value, this.oldValue);
-    }
+    if (_watchFun != null) _watchFun!(super.value, this.oldValue);
   }
 
-  /// 通知隔离的 watch 监听函数执行
-  notifyIsolateWatch() {
-    if (_notify.isolateWatchFun != null) {
-      _notify.isolateWatchFun!(super.value, this.oldValue);
+  /// 执行所有通过 [addWatch] 方法添加的监听函数
+  notifyWatchList() {
+    for (var fun in _notify.watchFunList) {
+      fun(super.value, this.oldValue);
     }
   }
 
@@ -230,12 +203,7 @@ class _Notify<T> {
   final List<VoidCallback> builderFunList = [];
 
   /// 用户手动添加的监听函数集合
-  final List<ObsWatchCallback<T>> watchFunList = [];
-
-  /// 隔离的监听函数
-  final ObsWatchCallback<T>? isolateWatchFun;
-
-  _Notify(this.isolateWatchFun);
+  final List<WatchCallback<T>> watchFunList = [];
 }
 
 /// 响应式变量测试工具类

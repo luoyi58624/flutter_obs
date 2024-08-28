@@ -85,7 +85,7 @@ void memoryLeakTest() {
     // 进入子页面会绑定1000个响应式构建器，所以 Obs 注册的依赖长度要为1001
     await tester.tap(find.text('child page'));
     await tester.pumpAndSettle();
-    expect(ObsTest.getWatchFunLength(state.count), 2);
+    expect(ObsTest.getWatchFunLength(state.count), 1);
     expect(ObsTest.getBuilderFunLength(state.count2), 1001);
     // 重置响应式变量，count2预期值要为0
     await tester.tap(find.text('reset count2'));
@@ -94,7 +94,7 @@ void memoryLeakTest() {
     // 返回页面，需要自动销毁1000个依赖，count2的依赖预期值要为1
     await tester.tap(find.text('back'));
     await tester.pumpAndSettle();
-    expect(ObsTest.getWatchFunLength(state.count), 1);
+    expect(ObsTest.getWatchFunLength(state.count), 0);
     expect(ObsTest.getBuilderFunLength(state.count2), 1);
 
     // 一旦此变量被销毁，则不可再使用，这是 ChangeNotifier 的机制，所以下方代码需要注释掉

@@ -1,3 +1,7 @@
+## 1.5.4
+
+* feat: enum ObsNotifyMode remove none
+
 ## 1.5.3
 
 * feat: auto -> notifyMode, add ObsNotifyMode
