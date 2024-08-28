@@ -5,12 +5,11 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_obs/flutter_obs.dart';
 
 /// 适配[flutter_hooks]库，相对于在[StatelessWidget]中直接使用[Obs]，它可以在小部件重建时保存当前状态
-Obs<T> useObs<T>(
-    T initialData, {
-      List<ObsNotifyMode> notifyMode = const [ObsNotifyMode.all],
-      ObsWatchCallback<T>? watch,
-      bool immediate = false,
-    }) {
+Obs<T> useObs<T>(T initialData, {
+  List<ObsNotifyMode> notifyMode = const [ObsNotifyMode.all],
+  WatchCallback<T>? watch,
+  bool immediate = false,
+}) {
   return use(_ObsHook(
     initialData: initialData,
     notifyMode: notifyMode,
@@ -29,7 +28,7 @@ class _ObsHook<T> extends Hook<Obs<T>> {
 
   final T initialData;
   final List<ObsNotifyMode> notifyMode;
-  final ObsWatchCallback<T>? watch;
+  final WatchCallback<T>? watch;
   final bool immediate;
 
   @override
