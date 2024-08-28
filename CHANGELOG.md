@@ -1,3 +1,7 @@
+## 1.5.3
+
+* feat: auto -> notifyMode, add ObsNotifyMode
+
 ## 1.5.2
 
 * chore: ObsWatchCallback -> WatchCallback
