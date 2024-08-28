@@ -24,7 +24,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 保存绑定的响应式变量集合，[Obs] 和 [ObsBuilder] 是多对多关系，
   /// [Obs] 保存的是多个 [ObsBuilder] 的刷新方法，而 [ObsBuilder] 可以引用多个 [Obs] 变量，
   /// 当组件被销毁时，需要通知所有引用此 [ObsBuilder] 的响应式变量移除它的刷新方法。
-  final Set<_Notify> _obsNotifyList = {};
+  final Set<Set<VoidCallback>> _obsList = {};
 
   /// 是否更新了 watch 依赖，此变量用于区分首次绑定的 watch
   bool _isUpdateWatch = false;
@@ -64,26 +64,26 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 小部件被销毁时移除副作用
   @override
   void dispose() {
-    for (var obs in _obsNotifyList) {
-      obs.builderFunList.remove(_notify);
+    for (var obs in _obsList) {
+      obs.remove(_notify);
     }
-    _obsNotifyList.clear();
+    _obsList.clear();
     super.dispose();
   }
 
   void _addWatch(List<Obs> watch) {
     for (final item in watch) {
-      if (!item._notify.builderFunList.contains(_notify)) {
-        item._notify.builderFunList.add(_notify);
-        _obsNotifyList.add(item._notify);
+      if (!item._builderFunList.contains(_notify)) {
+        item._builderFunList.add(_notify);
+        _obsList.add(item._builderFunList);
       }
     }
   }
 
   void _removeWatch(List<Obs> watch) {
     for (final item in watch) {
-      item._notify.builderFunList.remove(_notify);
-      _obsNotifyList.remove(item._notify);
+      item._builderFunList.remove(_notify);
+      _obsList.remove(item._builderFunList);
     }
   }
 
@@ -95,15 +95,15 @@ class _ObsBuilderState extends State<ObsBuilder> {
   @override
   Widget build(BuildContext context) {
     // 1.设置刷新页面函数到临时变量
-    _updateBuilderFun = _notify;
+    _builderNotifyFun = _notify;
     // 2.构建页面，触发响应式变量的 getter 方法，将 _notify 函数添加到监听器中
     var result = widget.builder(context);
     // 3.销毁临时变量
-    _updateBuilderFun = null;
+    _builderNotifyFun = null;
     // 4.在构建器中保存依赖的响应式变量集合
-    _obsNotifyList.addAll(_notifyList);
+    _obsList.addAll(_builderObsList);
     // 5.销毁依赖的响应式变量集合
-    _notifyList.clear();
+    _builderObsList.clear();
     // 6.如果设置了watch，则需要将监听的响应式变量添加到集合中
     if (widget.watch.isNotEmpty) {
       // 7.排除更新 watch 依赖，didUpdateWidget生命周期中已处理
