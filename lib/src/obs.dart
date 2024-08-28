@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 
 part 'builder.dart';
 
-/// 响应式变量监听回调
-typedef ObsWatchCallback<T> = void Function(T newValue, T oldValue);
+/// 监听回调，接收 newValue、oldValue 参数
+typedef WatchCallback<T> = void Function(T newValue, T oldValue);
 
 /// 临时 ObsBuilder 小部件重建函数
 VoidCallback? _updateBuilderFun;
@@ -17,7 +17,7 @@ class _Notify<T> {
   final List<VoidCallback> builderFunList = [];
 
   /// 用户手动添加的监听函数集合
-  final List<ObsWatchCallback<T>> watchFunList = [];
+  final List<WatchCallback<T>> watchFunList = [];
 }
 
 /// [Obs] 继承自 [ValueNotifier]，所以支持多种使用方式：
@@ -51,7 +51,7 @@ class Obs<T> extends ValueNotifier<T> {
   Obs(
     super.value, {
     this.auto = true,
-    ObsWatchCallback<T>? watch,
+    WatchCallback<T>? watch,
     bool immediate = false,
   }) {
     this._initialValue = super.value;
@@ -123,14 +123,14 @@ class Obs<T> extends ValueNotifier<T> {
   }
 
   /// 添加监听函数，接收 newValue、oldValue 两个参数
-  void addWatch(ObsWatchCallback<T> fun) {
+  void addWatch(WatchCallback<T> fun) {
     if (_notify.watchFunList.contains(fun) == false) {
       _notify.watchFunList.add(fun);
     }
   }
 
   /// 移除监听函数
-  void removeWatch(ObsWatchCallback<T> fun) {
+  void removeWatch(WatchCallback<T> fun) {
     _notify.watchFunList.remove(fun);
   }
 

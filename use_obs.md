@@ -35,10 +35,21 @@ class _ObsHook<T> extends Hook<Obs<T>> {
 }
 
 class _ObsHookState<T> extends HookState<Obs<T>, _ObsHook<T>> {
-  late final _state = Obs<T>(hook.initialData, watch: hook.watch);
+  late final _state = Obs<T>(
+    hook.initialData,
+    auto: hook.auto,
+    watch: hook.watch,
+    immediate: hook.immediate,
+  );
 
   @override
   Obs<T> build(BuildContext context) => _state;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _state.dispose();
+  }
 
   @override
   Object? get debugValue => _state.value;

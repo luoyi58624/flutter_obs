@@ -1,3 +1,7 @@
+## 1.5.2
+
+* chore: ObsWatchCallback -> WatchCallback
+
 ## 1.5.1
 
 * feat: 100% test coverage
