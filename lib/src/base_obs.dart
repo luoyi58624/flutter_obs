@@ -6,8 +6,8 @@ VoidCallback? _builderNotifyFun;
 /// ObsBuilder 内部允许存在多个 Obs 变量，此集合就是在 build 过程中收集多个 Obs 实例
 Set<Set<VoidCallback>> _builderObsList = {};
 
-abstract class _BaseObs<T> extends ValueNotifier<T> {
-  _BaseObs(this._value) : super(_value) {
+abstract class BaseObs<T> extends ValueNotifier<T> {
+  BaseObs(this._value) : super(_value) {
     this._initialValue = _value;
     this.oldValue = _value;
   }
@@ -26,7 +26,7 @@ abstract class _BaseObs<T> extends ValueNotifier<T> {
   /// 当小部件被 [ObsBuilder] 包裹时，它会追踪内部的响应式变量
   @override
   T get value {
-    _bindObsBuilder();
+    bindObsBuilder();
     return _value;
   }
 
@@ -41,7 +41,8 @@ abstract class _BaseObs<T> extends ValueNotifier<T> {
   }
 
   /// 绑定刷新小部件
-  void _bindObsBuilder() {
+  @protected
+  void bindObsBuilder() {
     if (_builderNotifyFun != null) {
       final fun = _builderNotifyFun!;
       if (!_builderFunList.contains(fun)) {

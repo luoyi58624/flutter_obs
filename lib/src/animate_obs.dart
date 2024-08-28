@@ -1,13 +1,12 @@
 part of 'obs.dart';
 
-class AnimateObs<T> extends Obs<T> {
+class AnimateObs<T> extends BaseObs<T> {
   AnimateObs(
     super.value, {
     required this.vsync,
     this.duration = Duration.zero,
     this.curve = Curves.linear,
-  }) : super(notifyMode: const [ObsNotifyMode.watchList]) {
-    addWatch(_watchAnimateFun);
+  }) {
     controller = AnimationController(vsync: vsync, duration: duration)
       ..addListener(() {
         notifyObsBuilder();
@@ -29,10 +28,11 @@ class AnimateObs<T> extends Obs<T> {
   late Animation<T> animation;
   late final AnimationController controller;
 
+  T get animationValue => animation.value;
+
   @override
-  T get value {
-    _bindObsBuilder();
-    return animation.value;
+  set value(T v) {
+
   }
 
   void _watchAnimateFun(newValue, oldValue) {

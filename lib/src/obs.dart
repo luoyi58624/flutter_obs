@@ -50,7 +50,7 @@ enum ObsNotifyMode {
 ///   },
 /// ),
 /// ```
-class Obs<T> extends _BaseObs<T> {
+class Obs<T> extends BaseObs<T> {
   /// 创建一个响应式变量，[ObsBuilder] 会收集内部所有响应式变量，当发生变更时会自动重建小部件。
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
