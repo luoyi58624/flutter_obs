@@ -50,7 +50,6 @@ class Obs<T> extends ValueNotifier<T> {
   /// 创建一个响应式变量，[ObsBuilder] 会收集内部所有响应式变量，当发生变更时会自动重建小部件。
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
-  /// * isolate
   Obs(
     super.value, {
     this.notifyMode = const [ObsNotifyMode.all],
@@ -76,7 +75,7 @@ class Obs<T> extends ValueNotifier<T> {
     return super.value;
   }
 
-  /// 拦截 setter 方法更新变量通知所有小部件更新
+  /// 拦截 setter 方法，根据通知策略触发监听函数
   @override
   set value(T newValue) {
     if (super.value != newValue) {
