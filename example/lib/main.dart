@@ -4,6 +4,7 @@ import '01.dart';
 import '02.dart';
 import '03.dart';
 import '04.dart';
+import '05.dart';
 
 void main() {
   runApp(const MainApp());
@@ -60,6 +61,12 @@ class _HomePageState extends State<HomePage> {
             title: const Text('03'),
             onTap: () {
               push(const Example3());
+            },
+          ),
+          ListTile(
+            title: const Text('05'),
+            onTap: () {
+              push(const Example5());
             },
           ),
           ListTile(
