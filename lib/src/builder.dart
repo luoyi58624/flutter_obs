@@ -1,4 +1,4 @@
-part of 'obs.dart';
+part of 'base_obs.dart';
 
 class ObsBuilder extends StatefulWidget {
   /// 响应式变量构建器，监听内部的响应式变量，当变量发生变更时，将重建小部件
@@ -24,7 +24,7 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 保存绑定的响应式变量集合，[Obs] 和 [ObsBuilder] 是多对多关系，
   /// [Obs] 保存的是多个 [ObsBuilder] 的刷新方法，而 [ObsBuilder] 可以引用多个 [Obs] 变量，
   /// 当组件被销毁时，需要通知所有引用此 [ObsBuilder] 的响应式变量移除它的刷新方法。
-  final Set<Set<VoidCallback>> _obsList = {};
+  final Set<Set<VoidCallback>> _builderObsList = {};
 
   /// 是否更新了 watch 依赖，此变量用于区分首次绑定的 watch
   bool _isUpdateWatch = false;
@@ -64,26 +64,26 @@ class _ObsBuilderState extends State<ObsBuilder> {
   /// 小部件被销毁时移除副作用
   @override
   void dispose() {
-    for (var obs in _obsList) {
+    for (var obs in _builderObsList) {
       obs.remove(_notify);
     }
-    _obsList.clear();
+    _builderObsList.clear();
     super.dispose();
   }
 
   void _addWatch(List<BaseObs> watch) {
     for (final item in watch) {
-      if (!item._builderFunList.contains(_notify)) {
-        item._builderFunList.add(_notify);
-        _obsList.add(item._builderFunList);
+      if (!item.builderFunList.contains(_notify)) {
+        item.builderFunList.add(_notify);
+        _builderObsList.add(item.builderFunList);
       }
     }
   }
 
   void _removeWatch(List<BaseObs> watch) {
     for (final item in watch) {
-      item._builderFunList.remove(_notify);
-      _obsList.remove(item._builderFunList);
+      item.builderFunList.remove(_notify);
+      _builderObsList.remove(item.builderFunList);
     }
   }
 
@@ -95,15 +95,15 @@ class _ObsBuilderState extends State<ObsBuilder> {
   @override
   Widget build(BuildContext context) {
     // 1.设置刷新页面函数到临时变量
-    _builderNotifyFun = _notify;
+    _tempBuilderNotifyFun = _notify;
     // 2.构建页面，触发响应式变量的 getter 方法，将 _notify 函数添加到监听器中
     var result = widget.builder(context);
     // 3.销毁临时变量
-    _builderNotifyFun = null;
+    _tempBuilderNotifyFun = null;
     // 4.在构建器中保存依赖的响应式变量集合
-    _obsList.addAll(_builderObsList);
+    _builderObsList.addAll(_tempBuilderObsList);
     // 5.销毁依赖的响应式变量集合
-    _builderObsList.clear();
+    _tempBuilderObsList.clear();
     // 6.如果设置了watch，则需要将监听的响应式变量添加到集合中
     if (widget.watch.isNotEmpty) {
       // 7.排除更新 watch 依赖，didUpdateWidget生命周期中已处理

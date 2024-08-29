@@ -1,4 +1,8 @@
-part of 'obs.dart';
+
+
+import 'package:flutter/widgets.dart';
+
+import 'base_obs.dart';
 
 class AnimateObs<T> extends BaseObs<T> {
   AnimateObs(
@@ -9,9 +13,9 @@ class AnimateObs<T> extends BaseObs<T> {
   }) {
     controller = AnimationController(vsync: vsync, duration: duration)
       ..addListener(() {
-        notifyObsBuilder();
+        notifyBuilders();
       });
-    tween = Tween(begin: oldValue, end: _value);
+    tween = Tween(begin: getValue(), end: getValue());
     animation = tween.animate(
       CurvedAnimation(
         parent: controller,
