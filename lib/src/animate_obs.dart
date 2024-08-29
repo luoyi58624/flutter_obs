@@ -22,18 +22,8 @@ class AnimateObs<T> extends BaseObs<T> {
     )..addListener(() {
         notifyBuilders();
       });
-
-    if (tween == null) {
-      assert(value is double,
-          'AnimateObs value is not double type, Please set custom Tween');
-      this.tween = Tween(begin: getValue(), end: getValue());
-    } else {
-      this.tween = tween;
-      this.tween.begin = getValue();
-      this.tween.end = getValue();
-    }
-
-    animation = this.tween.animate(
+    this.tween = tween;
+    animation = this._tween.animate(
           CurvedAnimation(
             parent: this.controller,
             curve: curve,
@@ -50,8 +40,23 @@ class AnimateObs<T> extends BaseObs<T> {
   /// 动画曲线
   Curve curve;
 
+  late Tween<T> _tween;
+
   /// 动画值区间
-  late Tween<T> tween;
+  Tween<T> get tween => _tween;
+
+  /// 设置动画值区间
+  set tween(Tween<T>? tween) {
+    if (tween == null) {
+      assert(value is double,
+          'AnimateObs value is not double type, Please set custom Tween');
+      this._tween = Tween(begin: getValue(), end: getValue());
+    } else {
+      this._tween = tween;
+      this._tween.begin = getValue();
+      this._tween.end = getValue();
+    }
+  }
 
   /// 通过 animation.value 可以访问动画值，在 [ObsBuilder] 中使用可能需要手动添加 watch 监听，
   /// 因为只有 .value 才会自动绑定。
@@ -64,9 +69,9 @@ class AnimateObs<T> extends BaseObs<T> {
       oldValue = getValue();
       setValue(value);
       controller.duration = Duration.zero;
-      this.tween.begin = animation.value;
-      this.tween.end = value;
-      animation = this.tween.animate(
+      this._tween.begin = animation.value;
+      this._tween.end = value;
+      animation = this._tween.animate(
             CurvedAnimation(
               parent: controller,
               curve: this.curve,
@@ -88,9 +93,9 @@ class AnimateObs<T> extends BaseObs<T> {
       oldValue = getValue();
       setValue(value);
       controller.duration = duration ?? this.duration;
-      this.tween.begin = animation.value;
-      this.tween.end = value;
-      animation = this.tween.animate(
+      this._tween.begin = animation.value;
+      this._tween.end = value;
+      animation = this._tween.animate(
             CurvedAnimation(
               parent: controller,
               curve: curve ?? this.curve,
