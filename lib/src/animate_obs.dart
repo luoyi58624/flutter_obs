@@ -12,16 +12,13 @@ class AnimateObs<T> extends BaseObs<T> {
   AnimateObs(
     super.value, {
     required TickerProvider vsync,
-    Duration duration = const Duration(milliseconds: 250),
-    Curve curve = Curves.linear,
+    this.duration = const Duration(milliseconds: 250),
+    this.curve = Curves.linear,
     Tween<T>? tween,
   }) {
-    this._duration = duration;
-    this._curve = curve;
-
     this.controller = AnimationController(
       vsync: vsync,
-      duration: _duration,
+      duration: duration,
     )..addListener(() {
         notifyBuilders();
       });
@@ -29,32 +26,32 @@ class AnimateObs<T> extends BaseObs<T> {
     if (tween == null) {
       assert(value is double,
           'AnimateObs value is not double type, Please set custom Tween');
-      _tween = Tween(begin: getValue(), end: getValue());
+      this.tween = Tween(begin: getValue(), end: getValue());
     } else {
-      _tween = tween;
-      _tween.begin = getValue();
-      _tween.end = getValue();
+      this.tween = tween;
+      this.tween.begin = getValue();
+      this.tween.end = getValue();
     }
 
-    animation = _tween.animate(
-      CurvedAnimation(
-        parent: this.controller,
-        curve: _curve,
-      ),
-    );
+    animation = this.tween.animate(
+          CurvedAnimation(
+            parent: this.controller,
+            curve: curve,
+          ),
+        );
   }
 
   /// 动画控制器
   late final AnimationController controller;
 
   /// 动画持续时间
-  late Duration _duration;
+  Duration duration;
 
   /// 动画曲线
-  late final Curve _curve;
+  Curve curve;
 
   /// 动画值区间
-  late final Tween<T> _tween;
+  late Tween<T> tween;
 
   /// 通过 animation.value 可以访问动画值，在 [ObsBuilder] 中使用可能需要手动添加 watch 监听，
   /// 因为只有 .value 才会自动绑定。
@@ -67,14 +64,14 @@ class AnimateObs<T> extends BaseObs<T> {
       oldValue = getValue();
       setValue(value);
       controller.duration = Duration.zero;
-      _tween.begin = animation.value;
-      _tween.end = value;
-      animation = _tween.animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: this._curve,
-        ),
-      );
+      this.tween.begin = animation.value;
+      this.tween.end = value;
+      animation = this.tween.animate(
+            CurvedAnimation(
+              parent: controller,
+              curve: this.curve,
+            ),
+          );
       controller.forward(from: 0);
     }
   }
@@ -90,15 +87,15 @@ class AnimateObs<T> extends BaseObs<T> {
     if (getValue() != value) {
       oldValue = getValue();
       setValue(value);
-      controller.duration = duration ?? this._duration;
-      _tween.begin = animation.value;
-      _tween.end = value;
-      animation = _tween.animate(
-        CurvedAnimation(
-          parent: controller,
-          curve: curve ?? this._curve,
-        ),
-      );
+      controller.duration = duration ?? this.duration;
+      this.tween.begin = animation.value;
+      this.tween.end = value;
+      animation = this.tween.animate(
+            CurvedAnimation(
+              parent: controller,
+              curve: curve ?? this.curve,
+            ),
+          );
       controller.forward(from: 0);
     }
   }
