@@ -19,7 +19,7 @@ class AnimateObs<T> extends BaseObs<T> {
     this._duration = duration;
     this._curve = curve;
 
-    this._controller = AnimationController(
+    this.controller = AnimationController(
       vsync: vsync,
       duration: _duration,
     )..addListener(() {
@@ -38,14 +38,14 @@ class AnimateObs<T> extends BaseObs<T> {
 
     animation = _tween.animate(
       CurvedAnimation(
-        parent: this._controller,
+        parent: this.controller,
         curve: _curve,
       ),
     );
   }
 
   /// 动画控制器
-  late final AnimationController _controller;
+  late final AnimationController controller;
 
   /// 动画持续时间
   late Duration _duration;
@@ -66,16 +66,16 @@ class AnimateObs<T> extends BaseObs<T> {
     if (getValue() != value) {
       oldValue = getValue();
       setValue(value);
-      _controller.duration = Duration.zero;
+      controller.duration = Duration.zero;
       _tween.begin = animation.value;
       _tween.end = value;
       animation = _tween.animate(
         CurvedAnimation(
-          parent: _controller,
+          parent: controller,
           curve: this._curve,
         ),
       );
-      _controller.forward(from: 0);
+      controller.forward(from: 0);
     }
   }
 
@@ -90,16 +90,16 @@ class AnimateObs<T> extends BaseObs<T> {
     if (getValue() != value) {
       oldValue = getValue();
       setValue(value);
-      _controller.duration = duration ?? this._duration;
+      controller.duration = duration ?? this._duration;
       _tween.begin = animation.value;
       _tween.end = value;
       animation = _tween.animate(
         CurvedAnimation(
-          parent: _controller,
+          parent: controller,
           curve: curve ?? this._curve,
         ),
       );
-      _controller.forward(from: 0);
+      controller.forward(from: 0);
     }
   }
 
@@ -124,7 +124,7 @@ class AnimateObs<T> extends BaseObs<T> {
   /// 当移除小部件时必须执行 dispose 回收动画控制器，执行 dispose 的时机必须在 super.dispose 之前
   @override
   void dispose() {
-    _controller.dispose();
+    controller.dispose();
     super.dispose();
   }
 }
