@@ -133,7 +133,6 @@ class GlobalState {
     },
   );
   var count2 = Obs(0);
-  final show = Obs(false);
 }
 
 class _MainApp extends StatelessWidget {

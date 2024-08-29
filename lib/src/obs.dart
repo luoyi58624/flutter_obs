@@ -51,22 +51,14 @@ class Obs<T> extends BaseObs<T> {
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
   Obs(
-    super._value, {
+    super.value, {
     this.notifyMode = const [ObsNotifyMode.all],
     WatchCallback<T>? watch,
     bool immediate = false,
   }) {
-    this._initialValue = getValue();
-    this.oldValue = getValue();
     this._watchFun = watch;
     if (immediate) notifyWatch();
   }
-
-  /// [_value] 初始值，当执行 [reset] 重置方法时应用它
-  late T _initialValue;
-
-  /// 记录上一次 [getValue()] 值
-  late T oldValue;
 
   /// 当响应式变量 setter 方法成功拦截时应用的通知模式，它接收一个数组，默认 [ObsNotifyMode.all]，
   /// 如果是空数组，那么修改响应式变量将不会触发任何通知。
@@ -101,15 +93,6 @@ class Obs<T> extends BaseObs<T> {
     }
   }
 
-  /// 重置响应式变量到初始状态
-  void reset() {
-    value = _initialValue;
-    // 在 dispose 生命周期中执行重置，如果不加延迟会导致 setState 异常
-    Future.delayed(const Duration(milliseconds: 1), () {
-      notify();
-    });
-  }
-
   /// 添加监听函数，接收 newValue、oldValue 两个参数
   void addWatch(WatchCallback<T> fun) {
     if (_watchFunList.contains(fun) == false) {
@@ -123,6 +106,7 @@ class Obs<T> extends BaseObs<T> {
   }
 
   /// 通知所有监听函数的执行、包括页面刷新
+  @override
   void notify() {
     notifyBuilders();
     notifyWatch();
@@ -158,7 +142,6 @@ class Obs<T> extends BaseObs<T> {
   /// 你可以一个一个地手动移除监听，也可以直接调用 dispose 清除全部副作用。
   @override
   void dispose() {
-    builderFunList.clear();
     _watchFunList.clear();
     super.dispose();
   }
