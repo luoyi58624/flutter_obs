@@ -17,7 +17,7 @@ class BaseObs<T> extends ValueNotifier<T> {
   }
 
   /// [_value] 初始值，当执行 [reset] 重置方法时应用它
-  late T _initialValue;
+  late final T _initialValue;
 
   /// 记录上一次 [_value] 值
   late T oldValue;
