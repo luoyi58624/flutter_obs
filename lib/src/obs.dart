@@ -109,10 +109,9 @@ class Obs<T> extends BaseObs<T> {
   /// 通知所有监听函数的执行、包括页面刷新
   @override
   void notify() {
-    notifyBuilders();
+    super.notify();
     notifyWatch();
     notifyWatchList();
-    notifyListeners();
   }
 
   /// 执行通过构造方法添加的监听函数
