@@ -1,3 +1,7 @@
+## 1.6.0
+
+* feat: add BaseObs, Pull the core implementation apart
+
 ## 1.5.4
 
 * feat: enum ObsNotifyMode remove none
