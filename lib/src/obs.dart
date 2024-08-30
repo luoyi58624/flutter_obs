@@ -26,7 +26,7 @@ enum ObsNotifyMode {
 /// [Obs] 继承自 [ValueNotifier]，所以支持多种使用方式：
 ///
 /// ```dart
-/// const count = BaseObs(0);
+/// const count = Obs(0);
 ///
 /// ObsBuilder(
 ///   builder: (context){
@@ -48,6 +48,7 @@ enum ObsNotifyMode {
 /// ```
 class Obs<T> extends BaseObs<T> {
   /// 创建一个响应式变量，[ObsBuilder] 会收集内部所有响应式变量，当发生变更时会自动重建小部件。
+  /// * notifyMode 修改变量触发的通知模式，接收一个数组，默认 [ObsNotifyMode.all]
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
   Obs(
@@ -60,11 +61,11 @@ class Obs<T> extends BaseObs<T> {
     if (immediate) notifyWatch();
   }
 
-  /// 当响应式变量 setter 方法成功拦截时应用的通知模式，它接收一个数组，默认 [ObsNotifyMode.all]，
-  /// 如果是空数组，那么修改响应式变量将不会触发任何通知。
+  /// 当响应式变量 setter 方法成功拦截时应用的通知模式，默认触发所有监听函数；
+  /// 如果是空数组，那么修改响应式变量将不会触发任何通知，你可以调用 [notify] 方法手动触发监听函数。
   List<ObsNotifyMode> notifyMode;
 
-  /// 构造方法添加的监听函数
+  /// 从构造方法添加的监听函数，不可移除
   late final WatchCallback<T>? _watchFun;
 
   /// 用户手动添加的监听函数集合
@@ -119,7 +120,7 @@ class Obs<T> extends BaseObs<T> {
     if (_watchFun != null) _watchFun!(getValue(), oldValue);
   }
 
-  /// 执行所有通过 [addWatch] 方法添加的监听函数
+  /// 执行通过 [addWatch] 方法添加的监听函数集合
   notifyWatchList() {
     for (var fun in _watchFunList) {
       fun(getValue(), oldValue);
@@ -142,8 +143,9 @@ class Obs<T> extends BaseObs<T> {
   /// 你可以一个一个地手动移除监听，也可以直接调用 dispose 清除全部副作用。
   @override
   void dispose() {
-    _watchFunList.clear();
     super.dispose();
+    builderFunList.clear();
+    _watchFunList.clear();
   }
 
   /// 如果将响应式变量当字符串使用，你可以省略.value

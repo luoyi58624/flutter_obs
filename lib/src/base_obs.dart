@@ -46,11 +46,11 @@ class BaseObs<T> extends ValueNotifier<T> {
   @protected
   final Set<VoidCallback> builderFunList = {};
 
-  /// 提供子类直接访问 [_value] 的方法，避免触发副作用函数
+  /// 让子类直接访问 [_value]
   @protected
   T getValue() => _value;
 
-  /// 提供子类直接修改 [_value] 的方法，避免触发副作用函数
+  /// 让子类直接修改 [_value]
   @protected
   void setValue(T value) {
     _value = value;
@@ -86,15 +86,9 @@ class BaseObs<T> extends ValueNotifier<T> {
   /// 重置响应式变量到初始状态
   void reset() {
     value = _initialValue;
-    // 在 dispose 生命周期中执行重置，如果不加延迟会导致 setState 异常
+    // 若在 dispose 生命周期中执行重置，如果不加延迟会导致 setState 异常
     Future.delayed(const Duration(milliseconds: 1), () {
       notify();
     });
-  }
-
-  @override
-  void dispose() {
-    builderFunList.clear();
-    super.dispose();
   }
 }
