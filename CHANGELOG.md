@@ -1,3 +1,7 @@
+## 1.6.2
+
+* chore: builderFunList use List, _watchFunList use Set
+
 ## 1.6.1
 
 * fix: BaseObs setter function should execute notify function

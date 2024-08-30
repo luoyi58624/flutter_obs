@@ -7,7 +7,7 @@ VoidCallback? _tempBuilderNotifyFun;
 
 /// ObsBuilder 内部允许存在多个 Obs 变量，
 /// 此集合就是在 build 过程中收集多个响应式变量 builderFunList 对象
-Set<Set<VoidCallback>> _tempBuilderObsList = {};
+Set<List<VoidCallback>> _tempBuilderObsList = {};
 
 class BaseObs<T> extends ValueNotifier<T> {
   /// 提供最基础的响应式变量实现，它只负责与 [ObsBuilder] 建立联系
@@ -44,7 +44,7 @@ class BaseObs<T> extends ValueNotifier<T> {
 
   /// [ObsBuilder] 刷新函数集合
   @protected
-  final Set<VoidCallback> builderFunList = {};
+  final List<VoidCallback> builderFunList = [];
 
   /// 让子类直接访问 [_value]
   @protected

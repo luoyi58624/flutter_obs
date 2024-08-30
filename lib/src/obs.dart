@@ -69,7 +69,7 @@ class Obs<T> extends BaseObs<T> {
   late final WatchCallback<T>? _watchFun;
 
   /// 用户手动添加的监听函数集合
-  final List<WatchCallback<T>> _watchFunList = [];
+  final Set<WatchCallback<T>> _watchFunList = {};
 
   /// 拦截 setter 方法，根据通知策略触发监听函数
   @override
@@ -96,9 +96,7 @@ class Obs<T> extends BaseObs<T> {
 
   /// 添加监听函数，接收 newValue、oldValue 两个参数
   void addWatch(WatchCallback<T> fun) {
-    if (_watchFunList.contains(fun) == false) {
-      _watchFunList.add(fun);
-    }
+    _watchFunList.add(fun);
   }
 
   /// 移除监听函数
