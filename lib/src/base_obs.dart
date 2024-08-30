@@ -38,7 +38,7 @@ class BaseObs<T> extends ValueNotifier<T> {
     if (_value != value) {
       oldValue = _value;
       _value = value;
-      notifyBuilders();
+      notify();
     }
   }
 

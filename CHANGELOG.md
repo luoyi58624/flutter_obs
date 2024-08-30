@@ -1,3 +1,7 @@
+## 1.6.1
+
+* fix: BaseObs setter function should execute notify function
+
 ## 1.6.0
 
 * feat: add BaseObs, Pull the core implementation apart
