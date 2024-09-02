@@ -9,8 +9,10 @@ VoidCallback? _tempBuilderNotifyFun;
 /// 此集合就是在 build 过程中收集多个响应式变量 builderFunList 对象
 Set<List<VoidCallback>> _tempBuilderObsList = {};
 
+/// 核心实现与 ValueNotifier 毫无关联，继承它只是为了扩展更多的应用场景，能够复用 Flutter
+/// 官方实现的一些响应式小部件：[ValueListenableBuilder]、[ListenableBuilder]
 class BaseObs<T> extends ValueNotifier<T> {
-  /// 提供最基础的响应式变量实现，它只负责与 [ObsBuilder] 建立联系
+  /// 提供最基础的响应式变量实现，核心逻辑便是与 [ObsBuilder] 建立联系，自动收集依赖
   BaseObs(this._value) : super(_value) {
     this._initialValue = _value;
     this.oldValue = _value;
@@ -46,11 +48,11 @@ class BaseObs<T> extends ValueNotifier<T> {
   @protected
   final List<VoidCallback> builderFunList = [];
 
-  /// 让子类直接访问 [_value]
+  /// 提供子类直接访问 [_value] 方法，避免触发副作用
   @protected
   T getValue() => _value;
 
-  /// 让子类直接修改 [_value]
+  /// 提供子类直接修改 [_value] 方法，避免触发副作用
   @protected
   void setValue(T value) {
     _value = value;
@@ -90,5 +92,11 @@ class BaseObs<T> extends ValueNotifier<T> {
     Future.delayed(const Duration(milliseconds: 1), () {
       notify();
     });
+  }
+
+  /// 如果将响应式变量当字符串使用，你可以省略.value
+  @override
+  String toString() {
+    return value.toString();
   }
 }

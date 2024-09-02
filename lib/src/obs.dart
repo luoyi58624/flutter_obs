@@ -47,7 +47,8 @@ enum ObsNotifyMode {
 /// ),
 /// ```
 class Obs<T> extends BaseObs<T> {
-  /// 创建一个响应式变量，[ObsBuilder] 会收集内部所有响应式变量，当发生变更时会自动重建小部件。
+  /// 创建一个响应式变量，它继承官方实现的 [ValueNotifier]，可以应用于 [ObsBuilder]、[ListenableBuilder]、[ValueListenableBuilder]
+  /// 等小部件，[ObsBuilder] 使用最简单，它会自动收集内部所有响应式变量，当发生变更时会自动重建小部件。
   /// * notifyMode 修改变量触发的通知模式，接收一个数组，默认 [ObsNotifyMode.all]
   /// * watch 设置监听回调函数，接收 newValue、oldValue 回调
   /// * immediate 是否立即执行一次监听函数，默认false
@@ -94,7 +95,8 @@ class Obs<T> extends BaseObs<T> {
     }
   }
 
-  /// 添加监听函数，接收 newValue、oldValue 两个参数
+  /// 添加监听函数，与 [ChangeNotifier] 不同的是，它接收 newValue、oldValue 两个参数，
+  /// 同时集合被设计为 Set，不允许添加重复的监听函数。
   void addWatch(WatchCallback<T> fun) {
     _watchFunList.add(fun);
   }
@@ -132,27 +134,21 @@ class Obs<T> extends BaseObs<T> {
 
   /// 释放所有监听器，一旦执行此变量将不可再次使用，不可使用的限制是来源于 [ChangeNotifier]。
   ///
-  /// 如果响应式只有刷新小部件的依赖，你不需要手动调用这个函数，当小部件被卸载时会自动移除监听函数，
+  /// 如果响应式只有刷新小部件的依赖，那么你不需要手动调用这个函数，当小部件被卸载时会自动移除监听函数，
   /// 你唯一需要考虑的是手动添加的副作用：
   /// * addListener -> removeListener
   /// * addWatch -> removeWatch
   ///
-  /// 你可以一个一个地手动移除监听，也可以直接调用 dispose 清除全部副作用。
+  /// 如果你确定不再使用这个响应式变量，可以直接调用 dispose 清除全部副作用，避免手动一个一个移除监听函数
   @override
   void dispose() {
     super.dispose();
     builderFunList.clear();
     _watchFunList.clear();
   }
-
-  /// 如果将响应式变量当字符串使用，你可以省略.value
-  @override
-  String toString() {
-    return value.toString();
-  }
 }
 
-/// 响应式变量测试工具类
+/// 响应式变量测试工具类，它的作用仅限于为测试提供内部 api 方法，它不会暴露于外部
 class ObsTest extends Obs {
   ObsTest._(super.value);
 

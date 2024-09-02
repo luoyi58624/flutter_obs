@@ -1,3 +1,7 @@
+## 1.6.3
+
+* chore: update note
+
 ## 1.6.2
 
 * chore: builderFunList use List, _watchFunList use Set
